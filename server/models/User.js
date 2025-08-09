@@ -1,3 +1,4 @@
+// User model: credentials, preferences, and auth helpers
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
@@ -25,38 +26,17 @@ const userSchema = new mongoose.Schema({
     minlength: [6, 'Password must be at least 6 characters long']
   },
   preferences: {
-    theme: {
-      type: String,
-      enum: ['light', 'dark'],
-      default: 'light'
-    },
-    sortBy: {
-      type: String,
-      enum: ['created', 'priority', 'dueDate', 'alphabetical'],
-      default: 'created'
-    },
-    filter: {
-      type: String,
-      enum: ['all', 'active', 'completed'],
-      default: 'all'
-    }
+    theme: { type: String, enum: ['light', 'dark'], default: 'light' },
+    sortBy: { type: String, enum: ['created', 'priority', 'dueDate', 'alphabetical'], default: 'created' },
+    filter: { type: String, enum: ['all', 'active', 'completed'], default: 'all' }
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  lastLoginAt: {
-    type: Date,
-    default: Date.now
-  }
-}, {
-  timestamps: true
-});
+  createdAt: { type: Date, default: Date.now },
+  lastLoginAt: { type: Date, default: Date.now }
+}, { timestamps: true });
 
-// Hash password before saving
+// Hash password if modified
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
-  
   try {
     const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
@@ -66,12 +46,12 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-// Compare password method
+// Compare plaintext vs hash
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Remove password from JSON output
+// Hide password in JSON
 userSchema.methods.toJSON = function() {
   const user = this.toObject();
   delete user.password;

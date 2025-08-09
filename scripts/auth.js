@@ -1,8 +1,4 @@
-/**
- * Authentication Manager for TODO List Application
- * Handles login, register, and session management
- */
-
+// Auth Manager: login, registration, and token/session handling
 class AuthManager {
     constructor() {
         this.apiBase = '/api/auth';
@@ -15,14 +11,14 @@ class AuthManager {
     init() {
         this.setupEventListeners();
         
-        // Check if user is already logged in
+        // Validate existing token if present
         if (this.token) {
             this.validateToken();
         }
     }
 
     setupEventListeners() {
-        // Form switching
+        // Toggle between login and register forms
         const showRegisterBtn = document.getElementById('showRegister');
         const showLoginBtn = document.getElementById('showLogin');
         const loginForm = document.getElementById('loginForm');
@@ -42,7 +38,7 @@ class AuthManager {
             });
         }
 
-        // Form submissions
+        // Handle form submissions
         if (loginForm) {
             loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -57,7 +53,7 @@ class AuthManager {
             });
         }
 
-        // Password confirmation validation
+        // Live confirm password check
         const confirmPassword = document.getElementById('confirmPassword');
         const registerPassword = document.getElementById('registerPassword');
         
@@ -257,7 +253,7 @@ class AuthManager {
     }
 
     showSuccess(message) {
-        // Create a success message similar to error
+        // Render transient success message
         let successDiv = document.getElementById('successMessage');
         
         if (!successDiv) {
@@ -269,7 +265,6 @@ class AuthManager {
                 <span id="successText"></span>
             `;
             
-            // Add success message styles
             successDiv.style.cssText = `
                 background: var(--pixel-sage);
                 color: var(--pixel-dark);
@@ -295,8 +290,6 @@ class AuthManager {
         if (successText) {
             successText.textContent = message;
             successDiv.classList.remove('hidden');
-            
-            // Auto-hide after 3 seconds
             setTimeout(() => {
                 successDiv.classList.add('hidden');
             }, 3000);
@@ -304,15 +297,15 @@ class AuthManager {
     }
 }
 
-// Initialize auth manager when DOM is ready
+// Bootstrap on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
     window.authManager = new AuthManager();
     
-    // Redirect to main app if already logged in
+    // Redirect if already authenticated
     if (window.authManager.isAuthenticated()) {
         window.location.href = '/';
     }
 });
 
-// Export for use in other modules
+// Expose in window for reuse
 window.AuthManager = AuthManager;

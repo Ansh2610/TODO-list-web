@@ -1,8 +1,4 @@
-/**
- * UI Manager - Handles all user interface interactions and updates
- * Manages DOM manipulation and user input
- */
-
+// UI Manager: handles rendering, modals, filters, theme, and notifications
 class UIManager {
     constructor(todoManager) {
         this.todoManager = todoManager;

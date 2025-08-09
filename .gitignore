@@ -1,4 +1,4 @@
-# Environment variables (contains sensitive data)
+# Environment variables 
 .env
 
 # Node.js dependencies
@@ -12,6 +12,6 @@ logs/
 .DS_Store
 Thumbs.db
 
-# IDE files (optional - remove if you want to share IDE settings)
+# IDE files 
 .vscode/
 .idea/

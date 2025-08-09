@@ -1,4 +1,5 @@
-/* Auth Page Specific Styles */
+/* Auth styles: layout, forms, loading, footer, responsive, dark theme */
+
 .auth-body {
     background: linear-gradient(45deg, var(--pixel-mint) 0%, var(--pixel-lavender) 25%, var(--pixel-sky) 50%, var(--pixel-sage) 75%, var(--pixel-mint) 100%);
     background-size: 32px 32px;
@@ -313,7 +314,7 @@
     text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.5);
 }
 
-/* Responsive Design for Auth */
+/* Responsive */
 @media (max-width: 480px) {
     .auth-container {
         max-width: 95%;
@@ -343,7 +344,7 @@
     }
 }
 
-/* Dark theme adjustments for auth */
+/* Dark theme */
 [data-theme="dark"] .auth-body {
     background: linear-gradient(45deg, var(--pixel-dark) 0%, #404050 25%, #505060 50%, #404050 75%, var(--pixel-dark) 100%);
 }

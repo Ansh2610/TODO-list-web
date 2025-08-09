@@ -1,3 +1,4 @@
+// Todo routes: CRUD, bulk actions, and stats (auth required)
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Todo = require('../models/Todo');
@@ -5,39 +6,37 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// Apply auth middleware to all routes
+// Require auth for all endpoints
 router.use(auth);
 
-// Get all todos for the authenticated user
+// List todos
 router.get('/', async (req, res) => {
   try {
     const { filter, sortBy, search } = req.query;
     
-    // Build query
+    // Base query
     let query = { userId: req.user._id };
     
-    // Apply filter
+    // Filter
     if (filter === 'active') {
       query.completed = false;
     } else if (filter === 'completed') {
       query.completed = true;
     }
     
-    // Apply search
+    // Search
     if (search) {
       query.text = { $regex: search, $options: 'i' };
     }
     
-    // Build sort object
-    let sort = { createdAt: -1 }; // Default sort
-    
+    // Sort
+    let sort = { createdAt: -1 }; // default
     switch (sortBy) {
       case 'priority':
         sort = { 
           priority: { $meta: 'textScore' },
           createdAt: -1 
         };
-        // Custom priority sorting
         break;
       case 'dueDate':
         sort = { dueDate: 1, createdAt: -1 };
@@ -53,7 +52,7 @@ router.get('/', async (req, res) => {
     
     let todos = await Todo.find(query).sort(sort);
     
-    // Custom priority sorting if needed
+    // Custom priority ordering if requested
     if (sortBy === 'priority') {
       const priorityOrder = { high: 3, medium: 2, low: 1 };
       todos = todos.sort((a, b) => {
@@ -63,51 +62,29 @@ router.get('/', async (req, res) => {
       });
     }
     
-    res.json({
-      success: true,
-      todos
-    });
+    res.json({ success: true, todos });
 
   } catch (error) {
     console.error('Get todos error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch todos',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Failed to fetch todos', error: error.message });
   }
 });
 
-// Create a new todo
+// Create
 router.post('/', [
-  body('text')
-    .notEmpty()
-    .withMessage('Todo text is required')
-    .isLength({ max: 200 })
-    .withMessage('Todo text cannot exceed 200 characters'),
-  body('priority')
-    .optional()
-    .isIn(['high', 'medium', 'low'])
-    .withMessage('Priority must be high, medium, or low'),
-  body('dueDate')
-    .optional()
-    .isISO8601()
-    .withMessage('Due date must be a valid date')
+  body('text').notEmpty().withMessage('Todo text is required').isLength({ max: 200 }).withMessage('Todo text cannot exceed 200 characters'),
+  body('priority').optional().isIn(['high', 'medium', 'low']).withMessage('Priority must be high, medium, or low'),
+  body('dueDate').optional().isISO8601().withMessage('Due date must be a valid date')
 ], async (req, res) => {
   try {
-    // Check validation errors
+    // Validate input
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array()
-      });
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
     }
 
     const { text, priority = 'medium', dueDate } = req.body;
     
-    // Create todo
     const todo = new Todo({
       text: text.trim(),
       priority,
@@ -117,58 +94,31 @@ router.post('/', [
 
     await todo.save();
 
-    res.status(201).json({
-      success: true,
-      message: 'Todo created successfully',
-      todo
-    });
+    res.status(201).json({ success: true, message: 'Todo created successfully', todo });
 
   } catch (error) {
     console.error('Create todo error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create todo',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Failed to create todo', error: error.message });
   }
 });
 
-// Update a todo
+// Update
 router.put('/:id', [
-  body('text')
-    .optional()
-    .notEmpty()
-    .withMessage('Todo text cannot be empty')
-    .isLength({ max: 200 })
-    .withMessage('Todo text cannot exceed 200 characters'),
-  body('priority')
-    .optional()
-    .isIn(['high', 'medium', 'low'])
-    .withMessage('Priority must be high, medium, or low'),
-  body('completed')
-    .optional()
-    .isBoolean()
-    .withMessage('Completed must be a boolean'),
-  body('dueDate')
-    .optional()
-    .isISO8601()
-    .withMessage('Due date must be a valid date')
+  body('text').optional().notEmpty().withMessage('Todo text cannot be empty').isLength({ max: 200 }).withMessage('Todo text cannot exceed 200 characters'),
+  body('priority').optional().isIn(['high', 'medium', 'low']).withMessage('Priority must be high, medium, or low'),
+  body('completed').optional().isBoolean().withMessage('Completed must be a boolean'),
+  body('dueDate').optional().isISO8601().withMessage('Due date must be a valid date')
 ], async (req, res) => {
   try {
-    // Check validation errors
+    // Validate input
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array()
-      });
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
     }
 
     const { id } = req.params;
     const updates = req.body;
 
-    // Find and update todo
     const todo = await Todo.findOneAndUpdate(
       { _id: id, userId: req.user._id },
       { $set: updates },
@@ -176,171 +126,104 @@ router.put('/:id', [
     );
 
     if (!todo) {
-      return res.status(404).json({
-        success: false,
-        message: 'Todo not found'
-      });
+      return res.status(404).json({ success: false, message: 'Todo not found' });
     }
 
-    res.json({
-      success: true,
-      message: 'Todo updated successfully',
-      todo
-    });
+    res.json({ success: true, message: 'Todo updated successfully', todo });
 
   } catch (error) {
     console.error('Update todo error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to update todo',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Failed to update todo', error: error.message });
   }
 });
 
-// Delete a todo
+// Delete
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const todo = await Todo.findOneAndDelete({
-      _id: id,
-      userId: req.user._id
-    });
+    const todo = await Todo.findOneAndDelete({ _id: id, userId: req.user._id });
 
     if (!todo) {
-      return res.status(404).json({
-        success: false,
-        message: 'Todo not found'
-      });
+      return res.status(404).json({ success: false, message: 'Todo not found' });
     }
 
-    res.json({
-      success: true,
-      message: 'Todo deleted successfully',
-      todo
-    });
+    res.json({ success: true, message: 'Todo deleted successfully', todo });
 
   } catch (error) {
     console.error('Delete todo error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to delete todo',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Failed to delete todo', error: error.message });
   }
 });
 
-// Toggle todo completion
+// Toggle completion
 router.patch('/:id/toggle', async (req, res) => {
   try {
     const { id } = req.params;
 
     const todo = await Todo.findOne({ _id: id, userId: req.user._id });
-    
     if (!todo) {
-      return res.status(404).json({
-        success: false,
-        message: 'Todo not found'
-      });
+      return res.status(404).json({ success: false, message: 'Todo not found' });
     }
 
     todo.completed = !todo.completed;
     await todo.save();
 
-    res.json({
-      success: true,
-      message: 'Todo toggled successfully',
-      todo
-    });
+    res.json({ success: true, message: 'Todo toggled successfully', todo });
 
   } catch (error) {
     console.error('Toggle todo error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to toggle todo',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Failed to toggle todo', error: error.message });
   }
 });
 
-// Mark all todos as completed/uncompleted
+// Mark all
 router.patch('/mark-all', [
-  body('completed')
-    .isBoolean()
-    .withMessage('Completed must be a boolean')
+  body('completed').isBoolean().withMessage('Completed must be a boolean')
 ], async (req, res) => {
   try {
-    // Check validation errors
+    // Validate input
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array()
-      });
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
     }
 
     const { completed } = req.body;
 
-    await Todo.updateMany(
-      { userId: req.user._id },
-      { $set: { completed } }
-    );
+    await Todo.updateMany({ userId: req.user._id }, { $set: { completed } });
 
     const todos = await Todo.find({ userId: req.user._id }).sort({ createdAt: -1 });
 
-    res.json({
-      success: true,
-      message: `All todos marked as ${completed ? 'completed' : 'active'}`,
-      todos
-    });
+    res.json({ success: true, message: `All todos marked as ${completed ? 'completed' : 'active'}`, todos });
 
   } catch (error) {
     console.error('Mark all todos error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to mark all todos',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Failed to mark all todos', error: error.message });
   }
 });
 
-// Clear completed todos
+// Clear completed
 router.delete('/completed', async (req, res) => {
   try {
-    const result = await Todo.deleteMany({
-      userId: req.user._id,
-      completed: true
-    });
-
+    const result = await Todo.deleteMany({ userId: req.user._id, completed: true });
     const todos = await Todo.find({ userId: req.user._id }).sort({ createdAt: -1 });
 
-    res.json({
-      success: true,
-      message: `${result.deletedCount} completed todos deleted`,
-      todos
-    });
+    res.json({ success: true, message: `${result.deletedCount} completed todos deleted`, todos });
 
   } catch (error) {
     console.error('Clear completed todos error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to clear completed todos',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Failed to clear completed todos', error: error.message });
   }
 });
 
-// Get todo statistics
+// Stats
 router.get('/stats', async (req, res) => {
   try {
     const userId = req.user._id;
 
     const stats = await Todo.aggregate([
       { $match: { userId } },
-      {
-        $group: {
+      { $group: {
           _id: null,
           total: { $sum: 1 },
           completed: { $sum: { $cond: ['$completed', 1, 0] } },
@@ -352,27 +235,13 @@ router.get('/stats', async (req, res) => {
       }
     ]);
 
-    const result = stats[0] || {
-      total: 0,
-      completed: 0,
-      active: 0,
-      high: 0,
-      medium: 0,
-      low: 0
-    };
+    const result = stats[0] || { total: 0, completed: 0, active: 0, high: 0, medium: 0, low: 0 };
 
-    res.json({
-      success: true,
-      stats: result
-    });
+    res.json({ success: true, stats: result });
 
   } catch (error) {
     console.error('Get stats error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to get statistics',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Failed to get statistics', error: error.message });
   }
 });
 

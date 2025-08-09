@@ -1,3 +1,4 @@
+// Express server: security, API routes, MongoDB connection, and static hosting
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -8,34 +9,34 @@ require('dotenv').config();
 
 const app = express();
 
-// Import routes
+// Routes
 const authRoutes = require('./server/routes/auth');
 const todoRoutes = require('./server/routes/todos');
 
-// Security middleware
+// Security
 app.use(helmet());
 
-// Rate limiting
+// Rate limit
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 100 // per IP
 });
 app.use(limiter);
 
-// CORS configuration
+// CORS
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:3000',
   credentials: true
 }));
 
-// Body parser middleware
+// Parsers
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files
+// Static
 app.use(express.static(path.join(__dirname, './')));
 
-// Connect to MongoDB
+// MongoDB
 mongoose.connect(process.env.MONGODB_URI)
 .then(() => {
   console.log('✅ Connected to MongoDB');
@@ -45,21 +46,21 @@ mongoose.connect(process.env.MONGODB_URI)
   process.exit(1);
 });
 
-// Routes
+// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/todos', todoRoutes);
 
-// Serve the main app
+// Index
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, './index.html'));
 });
 
-// 404 handler
+// 404
 app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-// Global error handler
+// Error handler
 app.use((error, req, res, next) => {
   console.error('Global error:', error);
   res.status(error.status || 500).json({
