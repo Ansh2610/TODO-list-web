@@ -300,7 +300,11 @@ class UIManager {
         this.todoManager.addEventListener('todosChanged', (data) => {
             this.renderTodos();
             this.updateCounts();
-            this.showNotification(this.getActionMessage(data.action, data.todo));
+            
+            // Don't show notification for initial data loading
+            if (data.action !== 'loaded') {
+                this.showNotification(this.getActionMessage(data.action, data.todo));
+            }
         });
 
         this.todoManager.addEventListener('filterChanged', () => {

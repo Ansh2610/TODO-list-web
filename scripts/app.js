@@ -20,7 +20,7 @@ class TodoApp {
     /**
      * Initialize the application
      */
-    init() {
+    async init() {
         try {
             console.log('App initializing...');
             
@@ -36,8 +36,18 @@ class TodoApp {
             // Initialize core managers
             console.log('Creating TodoManager...');
             this.todoManager = new TodoManager();
+            
+            // Wait for TodoManager to fully initialize before creating UI
+            console.log('Waiting for TodoManager to load data...');
+            await this.todoManager.init();
+            
             console.log('Creating UIManager...');
             this.uiManager = new UIManager(this.todoManager);
+            
+            // Force UI update after both managers are ready
+            console.log('Updating UI with loaded data...');
+            this.uiManager.renderTodos();
+            this.uiManager.updateCounts();
             
             // Make uiManager globally accessible for onclick handlers
             window.uiManager = this.uiManager;

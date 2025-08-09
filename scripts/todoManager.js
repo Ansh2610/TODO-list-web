@@ -15,7 +15,7 @@ class TodoManager {
             sortChanged: []
         };
         
-        this.init();
+        // Don't call init() here - it will be called explicitly from app.js
     }
 
     async init() {
@@ -24,6 +24,11 @@ class TodoManager {
         const settings = this.storage.getSettings();
         this.currentFilter = settings.filter || 'all';
         this.currentSort = settings.sortBy || 'created';
+        
+        // Notify listeners that todos have been loaded
+        this.emit('todosChanged', { action: 'loaded', todos: this.todos });
+        
+        console.log(`✅ TodoManager initialized: loaded ${this.todos.length} todos`);
     }
 
     /**
