@@ -4,6 +4,7 @@ import path from 'node:path'
 
 export default defineConfig({
   plugins: [react()],
+  base: process.env.NODE_ENV === 'production' ? '/TODO-list-web/' : '/',
   resolve: {
     alias: {
       '@root': path.resolve(__dirname, '..'),
