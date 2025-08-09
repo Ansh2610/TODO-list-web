@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const API = import.meta.env.VITE_API_URL || '/api'
 
 export default function TodosPage() {
+  const navigate = useNavigate()
   const [todos, setTodos] = useState([])
   const [text, setText] = useState('')
   const [description, setDescription] = useState('')
@@ -20,7 +22,7 @@ export default function TodosPage() {
 
   useEffect(() => {
     if (!token) {
-      window.location.href = '/auth'
+      navigate('/auth')
       return
     }
     
@@ -106,7 +108,7 @@ export default function TodosPage() {
   function logout() {
     localStorage.removeItem('authToken')
     localStorage.removeItem('user')
-    window.location.href = '/auth'
+    navigate('/auth')
   }
 
   const filteredTodos = useMemo(() => {

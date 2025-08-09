@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const API = import.meta.env.VITE_API_URL || '/api'
 
 export default function AuthPage() {
+  const navigate = useNavigate()
   const [isLogin, setIsLogin] = useState(true)
   const [login, setLogin] = useState('')
   const [email, setEmail] = useState('')
@@ -15,7 +17,7 @@ export default function AuthPage() {
   useEffect(() => {
     const token = localStorage.getItem('authToken')
     if (token) {
-      window.location.href = '/'
+      navigate('/')
     }
   }, [])
 
@@ -30,7 +32,7 @@ export default function AuthPage() {
       if (!data.success) throw new Error(data.message || 'Login failed')
       localStorage.setItem('authToken', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
-      window.location.href = '/'
+      navigate('/')
     } catch (e) { setError(e.message) }
   }
 
@@ -44,7 +46,7 @@ export default function AuthPage() {
       if (!data.success) throw new Error(data.message || 'Registration failed')
       localStorage.setItem('authToken', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
-      window.location.href = '/'
+      navigate('/')
     } catch (e) { setError(e.message) }
   }
 
