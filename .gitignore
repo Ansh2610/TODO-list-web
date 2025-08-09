@@ -1,0 +1,17 @@
+# Environment variables (contains sensitive data)
+.env
+
+# Node.js dependencies
+node_modules/
+
+# Logs
+*.log
+logs/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files (optional - remove if you want to share IDE settings)
+.vscode/
+.idea/
