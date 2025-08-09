@@ -38,7 +38,8 @@ export default function TodosPage() {
   async function fetchTodos() {
     setLoading(true)
     try {
-      const params = new URLSearchParams({ filter, sortBy })
+      // Only send sortBy to backend, handle filtering on frontend
+      const params = new URLSearchParams({ sortBy })
       const res = await fetch(`${API}/todos?${params}`, { headers: { Authorization: `Bearer ${token}` } })
       const data = await res.json()
       if (!data.success) throw new Error(data.message || 'Failed to fetch')
@@ -54,7 +55,7 @@ export default function TodosPage() {
 
   useEffect(() => {
     if (token) fetchTodos()
-  }, [filter, sortBy])
+  }, [sortBy]) // Only refetch when sort changes, NOT filter
 
   async function addTodo(e) {
     e.preventDefault()
@@ -80,7 +81,7 @@ export default function TodosPage() {
     })
     const data = await res.json()
     if (data.success) { 
-      setTodos([data.todo, ...todos])
+      setTodos(prevTodos => [data.todo, ...prevTodos])
       // Reset form
       setText('')
       setDescription('')
@@ -96,13 +97,17 @@ export default function TodosPage() {
   async function toggleTodo(id) {
     const res = await fetch(`${API}/todos/${id}/toggle`, { method: 'PATCH', headers: { Authorization: `Bearer ${token}` } })
     const data = await res.json()
-    if (data.success) setTodos(todos.map(t => t._id === id ? data.todo : t))
+    if (data.success) {
+      setTodos(prevTodos => prevTodos.map(t => t._id === id ? data.todo : t))
+    }
   }
 
   async function deleteTodo(id) {
     const res = await fetch(`${API}/todos/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
     const data = await res.json()
-    if (data.success) setTodos(todos.filter(t => t._id !== id))
+    if (data.success) {
+      setTodos(prevTodos => prevTodos.filter(t => t._id !== id))
+    }
   }
 
   function logout() {
@@ -119,11 +124,15 @@ export default function TodosPage() {
     })
   }, [todos, filter])
 
-  const counts = useMemo(() => ({
-    all: todos.length,
-    completed: todos.filter(t => t.completed).length,
-    active: todos.filter(t => !t.completed).length,
-  }), [todos])
+  const counts = useMemo(() => {
+    // Always calculate from the FULL todos array, not filtered
+    const allTodos = todos || []
+    return {
+      all: allTodos.length,
+      completed: allTodos.filter(t => t.completed).length,
+      active: allTodos.filter(t => !t.completed).length,
+    }
+  }, [todos])
 
   return (
     <div className="app-container">
