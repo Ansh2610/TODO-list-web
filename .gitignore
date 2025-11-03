@@ -48,6 +48,12 @@ Thumbs.db
 
 # Resume files (privacy)
 *.pdf
+
+# Documentation (keep local only)
+docs/API_ARCHITECTURE.md
+docs/API_QUICKSTART.md
+docs/API_REFACTOR_SUMMARY.md
+FASTAPI_COMPLETE.md
 !tests/sample_resume.pdf
 
 # Logs
