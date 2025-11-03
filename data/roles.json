@@ -1,0 +1,22 @@
+{
+  "Data Analyst": [
+    "Python", "SQL", "Excel", "Power BI", "Tableau", "Statistics", "Pandas", "ETL", "Data Cleaning",
+    "Visualization", "A/B Testing", "Hypothesis Testing", "Dashboards"
+  ],
+  "Software Engineer": [
+    "Python", "Java", "C++", "JavaScript", "React", "Node.js", "APIs", "Git", "OOP", "CI/CD",
+    "Unit Testing", "Docker", "Databases", "REST"
+  ],
+  "Machine Learning Engineer": [
+    "Python", "NumPy", "Pandas", "Scikit-learn", "PyTorch", "TensorFlow", "ML Ops", "Docker",
+    "FastAPI", "Model Deployment", "Feature Engineering"
+  ],
+  "Frontend Engineer": [
+    "JavaScript", "TypeScript", "React", "Next.js", "HTML", "CSS", "Tailwind", "Vite", "Webpack",
+    "Testing Library", "Cypress", "Accessibility", "Performance"
+  ],
+  "Backend Engineer": [
+    "Python", "Java", "Go", "Node.js", "Spring", "FastAPI", "Flask", "Databases", "PostgreSQL",
+    "MongoDB", "Caching", "Redis", "Microservices", "REST", "gRPC"
+  ]
+}

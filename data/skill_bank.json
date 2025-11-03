@@ -1,0 +1,8 @@
+{
+  "languages": ["Python", "Java", "C++", "JavaScript", "TypeScript", "Go", "SQL", "Ruby", "PHP", "Swift", "Kotlin", "Rust", "C#", "R", "Scala", "Perl"],
+  "frameworks": ["React", "Next.js", "Node.js", "Express", "Flask", "FastAPI", "Spring", "Django", "TensorFlow", "PyTorch", "Vue.js", "Angular", "Svelte", "Laravel", "Rails", "ASP.NET"],
+  "data_tools": ["Pandas", "NumPy", "Scikit-learn", "Power BI", "Tableau", "Excel", "Airflow", "dbt", "Spark", "Kafka", "Databricks", "Snowflake", "Looker"],
+  "devops": ["Git", "Docker", "Kubernetes", "CI/CD", "Terraform", "AWS", "GCP", "Azure", "Jenkins", "GitLab", "GitHub Actions", "Ansible", "CloudFormation"],
+  "concepts": ["OOP", "APIs", "REST", "gRPC", "ETL", "Model Deployment", "Feature Engineering", "Unit Testing", "Microservices", "Agile", "Scrum", "TDD", "Design Patterns", "Data Structures", "Algorithms"],
+  "soft_skills": ["Leadership", "Communication", "Stakeholder Management", "Collaboration", "Problem Solving", "Mentoring", "Project Management", "Team Building"]
+}
