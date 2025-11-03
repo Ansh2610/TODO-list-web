@@ -8,6 +8,7 @@ import logging
 import streamlit as st
 from dotenv import load_dotenv
 import time
+import atexit
 from backend.security import allowed_file, validate_file_size, secure_hash_name
 from backend.parser import extract_text_from_pdf
 from backend.utils import load_json
@@ -15,6 +16,22 @@ from backend.skills import extract_skills, flatten_categories, coverage_against_
 
 # ---- Constants ----
 APP_VERSION = "0.2.0-GALAXY"
+
+# ---- Logging ----
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# ---- Cleanup Handler ----
+# ---- Cleanup Handler ----
+def cleanup_on_exit():
+    """Clean up resources when app closes"""
+    logger.info("🌌 SkillLens Galaxy shutting down gracefully...")
+    
+# Register cleanup handler for when process exits
+atexit.register(cleanup_on_exit)
+
+# ---- Bootstrap ----
+load_dotenv()
 
 # Color Palette
 COLOR_PRIMARY = "#FF2E63"      # Hot Coral
@@ -24,9 +41,6 @@ COLOR_CARD = "#1A1A2E"        # Navy Glass
 COLOR_TEXT = "#FFFFFF"
 COLOR_TEXT_SECONDARY = "#A0A0FF"  # Soft Lavender
 COLOR_SUCCESS = "#00FFC6"
-
-# ---- Logging ----
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # ---- Bootstrap ----
@@ -201,6 +215,8 @@ if "total_skills_found" not in st.session_state:
     st.session_state.total_skills_found = 0
 if "confetti_triggered" not in st.session_state:
     st.session_state.confetti_triggered = False
+if "ai_insights_used" not in st.session_state:
+    st.session_state.ai_insights_used = 0
 
 # ---- Load Data ----
 @st.cache_data
@@ -330,6 +346,16 @@ if analyze and uploaded:
     st.session_state.analysis_count += 1
     st.session_state.skill_streak += 1
     st.session_state.total_skills_found += len(flat)
+    
+    # Store results in session state for persistence across reruns
+    st.session_state.current_results = {
+        "extracted": extracted,
+        "flat": flat,
+        "coverage": coverage,
+        "missing": missing,
+        "target_role": target_role,
+        "safe_name": safe_name
+    }
     
     logger.info(f"Galaxy analysis complete | skills={len(flat)} | coverage={coverage}%")
     
@@ -463,6 +489,411 @@ if analyze and uploaded:
             mime="application/json",
             use_container_width=True
         )
+    
+    # AI Insights Section - Opt-in only
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="skill-card" style="background: linear-gradient(135deg, {COLOR_PRIMARY}10, {COLOR_SECONDARY}10); border: 2px dashed {COLOR_PRIMARY}40;">
+        <h2 style='margin-top: 0;'>🤖 AI Career Coach</h2>
+        <p style='color: {COLOR_TEXT_SECONDARY};'>
+            Get personalized recommendations from our AI career advisor (powered by LLMs)
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Check if at least one API key is configured
+    has_openai = bool(os.getenv("OPENAI_API_KEY"))
+    has_anthropic = bool(os.getenv("ANTHROPIC_API_KEY"))
+    has_gemini = bool(os.getenv("GEMINI_API_KEY"))
+    
+    # AI insights button with usage limit
+    MAX_AI_USES = 5
+    ai_remaining = MAX_AI_USES - st.session_state.ai_insights_used
+    ai_disabled = ai_remaining <= 0 or not (has_openai or has_anthropic or has_gemini)
+    
+    if not (has_openai or has_anthropic or has_gemini):
+        st.warning("⚠️ **No API keys found** in `.env` file. Add at least one provider key to unlock AI insights.")
+    elif ai_remaining <= 0:
+        st.info(f"🎮 **AI insight limit reached!** You've used all {MAX_AI_USES} free AI analyses. Refresh to reset.")
+    
+    # Button with remaining count
+    button_label = f"🤖 Get AI Insights ({ai_remaining}/{MAX_AI_USES} remaining)" if ai_remaining > 0 else "🤖 AI Insights (0/5 remaining)"
+    
+    col_ai1, col_ai2 = st.columns([2, 3])
+    with col_ai1:
+        if st.button(button_label, use_container_width=True, type="primary", disabled=ai_disabled):
+            with st.spinner("🌌 Consulting the AI career galaxy..."):
+                try:
+                    from backend.benchmark import get_ai_recommendations
+                    
+                    # Call AI with only skill names (never raw resume)
+                    recommendations = get_ai_recommendations(
+                        extracted_skills=flat,
+                        missing_skills=missing,
+                        role_name=target_role,
+                        coverage_pct=coverage
+                    )
+                    
+                    if recommendations:
+                        # Store in session state and increment counter
+                        st.session_state["ai_recommendations"] = recommendations
+                        st.session_state.ai_insights_used += 1
+                        st.success("✅ AI insights generated!")
+                    else:
+                        st.error("❌ All LLM providers failed. Check your API keys and network connection.")
+                        
+                except Exception as e:
+                    st.error(f"❌ Error: {type(e).__name__}")
+                    logger.error(f"AI recommendation error: {e}")
+    
+    with col_ai2:
+        st.markdown(f"""
+        <p style='color: {COLOR_TEXT_SECONDARY}; font-size: 12px; padding-top: 8px;'>
+            🔒 Privacy: Only skill names sent to AI, never your full resume
+        </p>
+        """, unsafe_allow_html=True)
+    
+    # Display recommendations if available
+    if "ai_recommendations" in st.session_state:
+        recs = st.session_state["ai_recommendations"]
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # 1. Coverage Explanation
+        st.markdown(f"""
+        <div class="skill-card">
+            <h3>📊 Coverage Analysis</h3>
+            <p style='color: {COLOR_TEXT}; line-height: 1.6;'>
+                {recs.coverage_explanation}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # 2. Top Missing Skills
+        st.markdown(f"""
+        <div class="skill-card" style="background: linear-gradient(135deg, {COLOR_PRIMARY}15, {COLOR_SECONDARY}15);">
+            <h3>🎯 Priority Skills</h3>
+            <p style='color: {COLOR_TEXT}; line-height: 1.6;'>
+                {recs.top_missing_skills}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # 3. Learning Path
+        st.markdown(f"""
+        <div class="skill-card">
+            <h3>📚 Learning Roadmap</h3>
+            <p style='color: {COLOR_TEXT}; line-height: 1.6;'>
+                {recs.learning_path}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # 4. Project Ideas
+        st.markdown(f"""
+        <div class="skill-card" style="background: linear-gradient(135deg, {COLOR_SECONDARY}15, {COLOR_PRIMARY}15);">
+            <h3>💡 Portfolio Projects</h3>
+            <p style='color: {COLOR_TEXT}; line-height: 1.6;'>
+                {recs.project_ideas}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # 5. Resume Tweaks
+        st.markdown(f"""
+        <div class="skill-card">
+            <h3>✍️ Resume Optimization</h3>
+            <p style='color: {COLOR_TEXT}; line-height: 1.6;'>
+                {recs.resume_tweaks}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Privacy note
+        st.markdown(f"""
+        <p style='text-align: center; color: {COLOR_TEXT_SECONDARY}; font-size: 12px; margin-top: 20px;'>
+            🔒 Privacy: Only your extracted skill names were sent to the LLM - never your full resume text
+        </p>
+        """, unsafe_allow_html=True)
+
+# Display results from session state (persists across reruns)
+elif "current_results" in st.session_state:
+    # Restore results from session state
+    results = st.session_state.current_results
+    extracted = results["extracted"]
+    flat = results["flat"]
+    coverage = results["coverage"]
+    missing = results["missing"]
+    target_role = results["target_role"]
+    safe_name = results["safe_name"]
+    
+    # Show the same results display
+    st.markdown(f"""
+    <div class="success-banner">
+        <h2 style='margin: 0; font-size: 28px;'>🎉 Skill Galaxy Mapped!</h2>
+        <p style='margin: 10px 0 0 0; color: {COLOR_TEXT_SECONDARY};'>
+            Discovered {len(flat)} unique skills across your resume universe
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Stats Dashboard
+    st.markdown("### 📊 Your Skill Stats")
+    stat_col1, stat_col2, stat_col3, stat_col4 = st.columns(4)
+    
+    with stat_col1:
+        st.markdown(f"""
+        <div class="stat-badge">
+            <div class="stat-number">{coverage}%</div>
+            <div class="stat-label">Role Match</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with stat_col2:
+        st.markdown(f"""
+        <div class="stat-badge">
+            <div class="stat-number">{len(flat)}</div>
+            <div class="stat-label">Skills Found</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with stat_col3:
+        st.markdown(f"""
+        <div class="stat-badge">
+            <div class="stat-number">{st.session_state.skill_streak}</div>
+            <div class="stat-label">Streak 🔥</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with stat_col4:
+        st.markdown(f"""
+        <div class="stat-badge">
+            <div class="stat-number">{len([c for c in extracted.values() if c])}</div>
+            <div class="stat-label">Categories</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Skill Galaxy - Skills as orbs
+    st.markdown("""
+    <div class="skill-card">
+        <h2 style='margin-top: 0;'>🌟 Your Skill Constellation</h2>
+        <p style='color: {COLOR_TEXT_SECONDARY}; margin-bottom: 24px;'>
+            Hover over skills to see them glow
+        </p>
+    """.format(COLOR_TEXT_SECONDARY=COLOR_TEXT_SECONDARY), unsafe_allow_html=True)
+    
+    for category, skills in extracted.items():
+        if skills:
+            st.markdown(f"**{category.replace('_', ' ').title()}**")
+            orbs_html = " ".join([
+                f'<span class="skill-orb" title="Found in resume">{skill}</span>'
+                for skill in sorted(skills)
+            ])
+            st.markdown(orbs_html, unsafe_allow_html=True)
+            st.markdown("<br>", unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    # Missing Skills - with personality
+    if missing:
+        st.markdown(f"""
+        <div class="skill-card">
+            <h2 style='margin-top: 0;'>🤖 Skills to Level Up</h2>
+            <p style='color: {COLOR_TEXT_SECONDARY};'>
+                Add these to unlock the full {target_role} achievement
+            </p>
+            <br>
+        """, unsafe_allow_html=True)
+        
+        missing_orbs = " ".join([
+            f'<span class="skill-orb" style="opacity: 0.5; background: linear-gradient(135deg, #666, #999);">{skill}</span>'
+            for skill in sorted(missing[:10])
+        ])
+        st.markdown(missing_orbs, unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+    
+    # Shareable Skill Card
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("### 🎴 Share Your Skills")
+    
+    col_share1, col_share2 = st.columns([2, 1])
+    
+    with col_share1:
+        # Top 3 skills card
+        top_3_skills = flat[:3] if len(flat) >= 3 else flat
+        st.markdown(f"""
+        <div class="skill-card" style="background: linear-gradient(135deg, {COLOR_PRIMARY}20, {COLOR_SECONDARY}20);">
+            <h3>🏆 Top Skills</h3>
+        """, unsafe_allow_html=True)
+        for i, skill in enumerate(top_3_skills, 1):
+            st.markdown(f"**{i}.** {skill}")
+        st.markdown("</div>", unsafe_allow_html=True)
+    
+    with col_share2:
+        # Download JSON result
+        result = {
+            "target_role": target_role,
+            "coverage": coverage,
+            "skills_found": len(flat),
+            "missing_skills": missing,
+            "extracted_by_category": extracted,
+            "extracted_flat_unique": flat,
+            "stats": {
+                "streak": st.session_state.skill_streak,
+                "total_analyses": st.session_state.analysis_count,
+                "app_version": APP_VERSION
+            }
+        }
+        
+        st.download_button(
+            "💾 Save Galaxy Data",
+            data=json.dumps(result, indent=2),
+            file_name=f"skill_galaxy_{safe_name}.json",
+            mime="application/json",
+            use_container_width=True
+        )
+    
+    # AI Insights Section - Opt-in only
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="skill-card" style="background: linear-gradient(135deg, {COLOR_PRIMARY}10, {COLOR_SECONDARY}10); border: 2px dashed {COLOR_PRIMARY}40;">
+        <h2 style='margin-top: 0;'>🤖 AI Career Coach</h2>
+        <p style='color: {COLOR_TEXT_SECONDARY};'>
+            Get personalized recommendations from our AI career advisor (powered by LLMs)
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Check if at least one API key is configured
+    has_openai = bool(os.getenv("OPENAI_API_KEY"))
+    has_anthropic = bool(os.getenv("ANTHROPIC_API_KEY"))
+    has_gemini = bool(os.getenv("GEMINI_API_KEY"))
+    
+    # AI insights button with usage limit
+    MAX_AI_USES = 5
+    ai_remaining = MAX_AI_USES - st.session_state.ai_insights_used
+    ai_disabled = ai_remaining <= 0 or not (has_openai or has_anthropic or has_gemini)
+    
+    if not (has_openai or has_anthropic or has_gemini):
+        st.warning("⚠️ **No API keys found** in `.env` file. Add at least one provider key to unlock AI insights.")
+    elif ai_remaining <= 0:
+        st.info(f"🎮 **AI insight limit reached!** You've used all {MAX_AI_USES} free AI analyses. Refresh to reset.")
+    
+    # Button with remaining count
+    button_label = f"🤖 Get AI Insights ({ai_remaining}/{MAX_AI_USES} remaining)" if ai_remaining > 0 else "🤖 AI Insights (0/5 remaining)"
+    
+    col_ai1, col_ai2 = st.columns([2, 3])
+    with col_ai1:
+        if st.button(button_label, use_container_width=True, type="primary", disabled=ai_disabled):
+            with st.spinner("🌌 Consulting the AI career galaxy..."):
+                try:
+                    from backend.benchmark import get_ai_recommendations
+                    
+                    # Call AI with only skill names (never raw resume)
+                    recommendations = get_ai_recommendations(
+                        extracted_skills=flat,
+                        missing_skills=missing,
+                        role_name=target_role,
+                        coverage_pct=coverage
+                    )
+                    
+                    if recommendations:
+                        # Store in session state and increment counter
+                        st.session_state["ai_recommendations"] = recommendations
+                        st.session_state.ai_insights_used += 1
+                        st.session_state.pop("ai_error", None)  # Clear any previous errors
+                        st.rerun()  # Force rerun to show results
+                    else:
+                        # Store error in session state instead of showing immediately
+                        st.session_state["ai_error"] = "All LLM providers failed. Check your API keys and network connection."
+                        
+                except Exception as e:
+                    # Store error in session state
+                    st.session_state["ai_error"] = f"Error: {type(e).__name__} - {str(e)}"
+                    logger.error(f"AI recommendation error: {e}")
+    
+    with col_ai2:
+        st.markdown(f"""
+        <p style='color: {COLOR_TEXT_SECONDARY}; font-size: 12px; padding-top: 8px;'>
+            🔒 Privacy: Only skill names sent to AI, never your full resume
+        </p>
+        """, unsafe_allow_html=True)
+    
+    # Show error if present (persists across reruns)
+    if "ai_error" in st.session_state:
+        col_err1, col_err2 = st.columns([4, 1])
+        with col_err1:
+            st.error(f"❌ {st.session_state['ai_error']}")
+        with col_err2:
+            if st.button("✕ Clear", key="clear_ai_error"):
+                st.session_state.pop("ai_error", None)
+                st.rerun()
+    
+    # Display recommendations if available
+    # Display recommendations if available
+    if "ai_recommendations" in st.session_state:
+        recs = st.session_state["ai_recommendations"]
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # 1. Coverage Explanation
+        st.markdown(f"""
+        <div class="skill-card">
+            <h3>📊 Coverage Analysis</h3>
+            <p style='color: {COLOR_TEXT}; line-height: 1.6;'>
+                {recs.coverage_explanation}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # 2. Top Missing Skills
+        st.markdown(f"""
+        <div class="skill-card" style="background: linear-gradient(135deg, {COLOR_PRIMARY}15, {COLOR_SECONDARY}15);">
+            <h3>🎯 Priority Skills</h3>
+            <p style='color: {COLOR_TEXT}; line-height: 1.6;'>
+                {recs.top_missing_skills}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # 3. Learning Path
+        st.markdown(f"""
+        <div class="skill-card">
+            <h3>📚 Learning Roadmap</h3>
+            <p style='color: {COLOR_TEXT}; line-height: 1.6;'>
+                {recs.learning_path}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # 4. Project Ideas
+        st.markdown(f"""
+        <div class="skill-card" style="background: linear-gradient(135deg, {COLOR_SECONDARY}15, {COLOR_PRIMARY}15);">
+            <h3>💡 Portfolio Projects</h3>
+            <p style='color: {COLOR_TEXT}; line-height: 1.6;'>
+                {recs.project_ideas}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # 5. Resume Tweaks
+        st.markdown(f"""
+        <div class="skill-card">
+            <h3>✍️ Resume Optimization</h3>
+            <p style='color: {COLOR_TEXT}; line-height: 1.6;'>
+                {recs.resume_tweaks}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Privacy note
+        st.markdown(f"""
+        <p style='text-align: center; color: {COLOR_TEXT_SECONDARY}; font-size: 12px; margin-top: 20px;'>
+            🔒 Privacy: Only your extracted skill names were sent to the LLM - never your full resume text
+        </p>
+        """, unsafe_allow_html=True)
 
 # Footer - with personality
 st.markdown("<br><br>", unsafe_allow_html=True)
