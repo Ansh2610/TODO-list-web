@@ -367,6 +367,44 @@ if st.session_state.current_results is not None:
                 st.caption(f"... and {len(results['missing_skills']) - 15} more missing skills")
         else:
             st.success("🎉 You have all the required skills!")
+        
+        # Explainable Match Feature (Killer Feature!)
+        if results.get('suggestions') and len(results['suggestions']) > 0:
+            st.markdown("---")
+            st.markdown("### 💡 Smart Suggestions - Explainable Match")
+            st.caption("See exactly how much each skill would boost your coverage!")
+            
+            # Sort suggestions by impact (highest boost first)
+            sorted_suggestions = sorted(
+                results['suggestions'].items(),
+                key=lambda x: x[1],
+                reverse=True
+            )
+            
+            # Display top 5 suggestions with % boost
+            suggestions_html = ""
+            for skill, boost in sorted_suggestions[:5]:
+                new_coverage = results['coverage_percentage'] + boost
+                suggestions_html += f'''
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                padding: 12px 16px; border-radius: 8px; margin-bottom: 8px;
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: white; font-weight: 600; font-size: 15px;">
+                                {skill}
+                            </span>
+                            <span style="background: rgba(255,255,255,0.2); color: white; 
+                                         padding: 4px 12px; border-radius: 12px; font-size: 13px;">
+                                +{boost}% → {new_coverage:.0f}%
+                            </span>
+                        </div>
+                    </div>
+                '''
+            
+            st.markdown(suggestions_html, unsafe_allow_html=True)
+            
+            if len(sorted_suggestions) > 5:
+                st.caption(f"💡 Tip: Adding any of these {len(sorted_suggestions)} skills would boost your score!")
     
     # AI Insights Section
     st.markdown("---")
