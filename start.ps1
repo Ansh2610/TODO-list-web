@@ -2,7 +2,7 @@
 
 Write-Host ""
 Write-Host "========================================"
-Write-Host "  SkillLens Resume Analyzer"
+Write-Host "  Resume Skill Analyzer MVP"
 Write-Host "  Starting FastAPI + Streamlit"
 Write-Host "========================================"
 Write-Host ""
@@ -32,20 +32,20 @@ Start-Process powershell -ArgumentList "-NoExit", "-Command", "conda activate sk
 Start-Sleep -Seconds 3
 
 Write-Host ""
-Write-Host "[3/3] Starting Streamlit frontend on port 8501..." -ForegroundColor Cyan
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "conda activate skills; streamlit run app_streamlit_simple.py" -WindowStyle Normal
+Write-Host "[3/3] Starting Streamlit frontend on port 8503..." -ForegroundColor Cyan
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "conda activate skills; streamlit run app_streamlit_m4.py --server.port 8503" -WindowStyle Normal
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
-Write-Host "  SkillLens is starting!" -ForegroundColor Green
+Write-Host "  Application starting!" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "  API Documentation: http://localhost:8000/docs" -ForegroundColor White
-Write-Host "  Streamlit UI:      http://localhost:8501" -ForegroundColor White
+Write-Host "  Streamlit UI:      http://localhost:8503" -ForegroundColor White
 Write-Host ""
 Write-Host "  Two terminal windows will open:" -ForegroundColor Yellow
 Write-Host "  - FastAPI backend (port 8000)" -ForegroundColor Yellow
-Write-Host "  - Streamlit frontend (port 8501)" -ForegroundColor Yellow
+Write-Host "  - Streamlit frontend (port 8503)" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "  Your browser should open automatically." -ForegroundColor Cyan
 Write-Host "  Close the terminal windows to stop the servers." -ForegroundColor Cyan

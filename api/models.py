@@ -46,12 +46,30 @@ class BenchmarkRequest(BaseModel):
 
 
 class BenchmarkResponse(BaseModel):
-    """Response from benchmarking endpoint"""
+    """
+    Response from benchmarking endpoint
+    KILLER FEATURE: Explainable match - shows WHY you got N% and HOW to improve
+    """
     success: bool
     coverage_percentage: float = 0.0
     found_skills: List[str] = Field(default_factory=list)
     missing_skills: List[str] = Field(default_factory=list)
     target_role: Optional[str] = None
+    
+    # Explainable match features (NEW - makes this stand out)
+    positive_contributors: List[str] = Field(
+        default_factory=list,
+        description="Skills that boosted your match score"
+    )
+    suggestions: Dict[str, int] = Field(
+        default_factory=dict,
+        description="Missing skills mapped to % boost if added. e.g., {'Docker': 8, 'AWS': 8}"
+    )
+    explanation: str = Field(
+        default="",
+        description="Human-readable explanation of your match score"
+    )
+    
     error: Optional[str] = None
 
 

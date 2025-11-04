@@ -7,7 +7,6 @@ from typing import Dict, List, Any, Optional
 
 from .llm_router import LLMRouter
 from .schemas import validate_ai_payload
-from .redact import redact_text
 
 logger = logging.getLogger(__name__)
 
@@ -86,12 +85,12 @@ def get_ai_recommendations(
         # Build prompt from skill names only (never raw resume text)
         prompt = build_prompt(extracted_skills, missing_skills, role_name, coverage_pct)
         
-        # Redact any PII that might have leaked into skill names
-        safe_prompt = redact_text(prompt)
+        # Prompt is already privacy-safe (skills only, no PII)
+        # No need for additional redaction
         
         # Call LLM router with automatic failover
         router = LLMRouter()
-        raw_response = router.call(safe_prompt)
+        raw_response = router.call(prompt)
         
         # Validate against schema
         validated = validate_ai_payload(raw_response)

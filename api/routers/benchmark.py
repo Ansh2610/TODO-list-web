@@ -70,22 +70,23 @@ async def benchmark_resume(request: BenchmarkRequest):
         
         logger.info(f"Benchmarking {len(request.resume_skills)} skills against {target_name}")
         
-        # Calculate coverage using existing function
-        coverage, missing = coverage_against_role(
+        # Calculate coverage with explainable insights (NEW killer feature!)
+        result = coverage_against_role(
             request.resume_skills,  # extracted_flat
             target_skills           # role_skills
         )
         
-        # Found skills are the intersection
-        found = list(set(request.resume_skills) & set(target_skills))
-        
-        logger.info(f"✓ Coverage: {coverage:.1f}% ({len(found)} found, {len(missing)} missing)")
+        logger.info(f"✓ Coverage: {result['coverage_percentage']}% "
+                   f"({len(result['matched_skills'])} matched, {len(result['missing_skills'])} missing)")
         
         return BenchmarkResponse(
             success=True,
-            coverage_percentage=coverage,
-            found_skills=found,
-            missing_skills=missing,
+            coverage_percentage=result["coverage_percentage"],
+            found_skills=result["matched_skills"],
+            missing_skills=result["missing_skills"],
+            positive_contributors=result["positive_contributors"],
+            suggestions=result["suggestions"],
+            explanation=result["explanation"],
             target_role=request.target_role
         )
         

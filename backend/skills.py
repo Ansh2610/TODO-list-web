@@ -54,23 +54,59 @@ def extract_skills(text: str, skill_bank: Dict[str, List[str]]) -> Dict[str, Lis
     return found
 
 
-def coverage_against_role(extracted_flat: List[str], role_skills: List[str]) -> Tuple[int, List[str]]:
+def coverage_against_role(extracted_flat: List[str], role_skills: List[str]) -> Dict:
     """
-    Calculate coverage percentage and missing skills vs. target role.
+    Calculate coverage with explainable insights - shows WHY you got N% match.
+    
+    This is the "killer feature" - explains not just WHAT'S missing, but HOW to improve.
+    Shows which skills helped, which hurt, and what would boost your score.
     
     Args:
         extracted_flat: List of all extracted skills (from resume)
         role_skills: List of required skills for target role
         
     Returns:
-        Tuple of (coverage_percentage, list_of_missing_skills)
+        Dict with:
+          - coverage_percentage: int (0-100)
+          - matched_skills: list of skills you have
+          - missing_skills: list of skills you need
+          - positive_contributors: skills that helped your score
+          - suggestions: dict mapping skill -> % boost if added
     """
     norm_have = set(s.lower() for s in extracted_flat)
     norm_need = [s.lower() for s in role_skills]
-    hits = sum(1 for s in norm_need if s in norm_have)
-    coverage = int(round((hits / max(1, len(norm_need))) * 100))
+    
+    # Calculate matched and missing
+    matched = [s for s in role_skills if s.lower() in norm_have]
     missing = [s for s in role_skills if s.lower() not in norm_have]
-    return coverage, missing
+    
+    hits = len(matched)
+    total = max(1, len(norm_need))
+    coverage = int(round((hits / total) * 100))
+    
+    # Explainable insights: how much would each missing skill boost coverage?
+    suggestions = {}
+    for skill in missing[:5]:  # Top 5 suggestions to avoid overwhelming
+        # Calculate boost if this skill were added
+        new_hits = hits + 1
+        new_coverage = int(round((new_hits / total) * 100))
+        boost = new_coverage - coverage
+        suggestions[skill] = boost
+    
+    # Sort suggestions by impact (highest boost first)
+    sorted_suggestions = dict(
+        sorted(suggestions.items(), key=lambda x: x[1], reverse=True)
+    )
+    
+    return {
+        "coverage_percentage": coverage,
+        "matched_skills": matched,
+        "missing_skills": missing,
+        "positive_contributors": matched,  # Skills that helped your score
+        "suggestions": sorted_suggestions,  # Add these to improve
+        "explanation": f"You matched {hits}/{total} required skills = {coverage}%. "
+                      f"{'Great match!' if coverage >= 80 else 'Add key skills to boost your score.'}"
+    }
 
 
 def flatten_categories(extracted: Dict[str, List[str]]) -> List[str]:

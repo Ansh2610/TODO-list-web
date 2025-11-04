@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 from api.config import settings
-from api.routers import parse, benchmark, ai, resources, export
+from api.routers import parse, benchmark, ai, resources
 from api.models import HealthResponse
 
 # Configure logging
@@ -64,10 +64,10 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-# Health check endpoint
+# Health check endpoints
 @app.get("/health", response_model=HealthResponse, tags=["System"])
 async def health_check():
-    """Check API health and configuration"""
+    """Check API health and configuration (legacy endpoint)"""
     configured_providers = []
     if settings.GEMINI_API_KEY:
         configured_providers.append("GEMINI")
@@ -83,12 +83,32 @@ async def health_check():
     )
 
 
+@app.get("/healthz", tags=["System"])
+async def healthz():
+    """Kubernetes-style health check for load balancers"""
+    from datetime import datetime
+    return {
+        "status": "ok",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+@app.get("/version", tags=["System"])
+async def version():
+    """Get API version and build information"""
+    return {
+        "version": settings.API_VERSION,
+        "title": settings.API_TITLE,
+        "environment": "production" if settings.CORS_ORIGINS != ["*"] else "development"
+    }
+
+
 # Include routers
 app.include_router(parse.router, prefix="/api", tags=["Parse"])
 app.include_router(benchmark.router, prefix="/api", tags=["Benchmark"])
 app.include_router(ai.router, prefix="/api", tags=["AI Insights"])
 app.include_router(resources.router, prefix="/api", tags=["Resources"])
-app.include_router(export.router, prefix="/api", tags=["Export"])
+# Export router removed - exporter module deleted in MVP cleanup
 
 
 if __name__ == "__main__":

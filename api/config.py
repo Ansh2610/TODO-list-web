@@ -31,17 +31,25 @@ class Settings(BaseSettings):
     RATE_LIMIT_AI_CALLS: int = 5  # AI insights per session
     RATE_LIMIT_WINDOW_SECONDS: int = 3600  # 1 hour window
     
-    # CORS
-    CORS_ORIGINS: List[str] = [
-        "http://localhost:8501",  # Streamlit default
-        "http://127.0.0.1:8501",
-    ]
+    # CORS - Production whitelist
+    # Set CORS_ORIGINS in .env as comma-separated: "https://app.example.com,https://www.example.com"
+    # Defaults to localhost for development
+    CORS_ORIGINS_RAW: str = "http://localhost:8503,http://127.0.0.1:8503"
+    
+    @property
+    def CORS_ORIGINS(self) -> List[str]:
+        """Parse CORS origins from environment variable"""
+        return [origin.strip() for origin in self.CORS_ORIGINS_RAW.split(",") if origin.strip()]
     
     # LLM Settings (from .env)
     OPENAI_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     ANTHROPIC_API_KEY: str = ""
     LLM_PROVIDERS: str = "GEMINI,OPENAI,ANTHROPIC"
+    
+    # Feature Flags (experimental features disabled by default)
+    ENABLE_SEMANTIC: bool = False  # TODO: LangChain semantic skill matching
+    ENABLE_JWT: bool = False  # TODO: JWT authentication for protected endpoints
 
 
 settings = Settings()
