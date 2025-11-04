@@ -263,6 +263,8 @@ if uploaded_file is not None:
                     coverage = benchmark_result["coverage_percentage"]
                     found_skills = benchmark_result["found_skills"]
                     missing_skills = benchmark_result["missing_skills"]
+                    suggestions = benchmark_result.get("suggestions", {})
+                    explanation = benchmark_result.get("explanation", "")
                     
                     # Update session state
                     st.session_state.analysis_count += 1
@@ -272,6 +274,9 @@ if uploaded_file is not None:
                         "found_skills": found_skills,
                         "missing_skills": missing_skills,
                         "coverage": coverage,
+                        "coverage_percentage": coverage,  # Add this for consistency
+                        "suggestions": suggestions,  # 🎯 THE FIX!
+                        "explanation": explanation,  # 🎯 THE FIX!
                         "target_role": target_label,
                         "mode": "Custom JD" if st.session_state.use_custom_jd else "Role"
                     }
