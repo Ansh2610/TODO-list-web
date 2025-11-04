@@ -38,21 +38,20 @@ ENV PATH=/home/skilllens/.local/bin:$PATH
 
 # Production environment variables
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PORT=8000
+    PYTHONDONTWRITEBYTECODE=1
 
-# Expose port
-EXPOSE 8000
+# Expose port (Railway will set PORT env var dynamically)
+EXPOSE 8080
 
-# Health check
+# Health check (use PORT env var)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/healthz', timeout=5)"
+    CMD python -c "import requests, os; requests.get(f'http://localhost:{os.getenv(\"PORT\", \"8080\")}/healthz', timeout=5)"
 
-# Run with gunicorn + uvicorn workers
+# Run with gunicorn + uvicorn workers (PORT will be set by Railway)
 CMD gunicorn api.main:app \
     --workers 4 \
     --worker-class uvicorn.workers.UvicornWorker \
-    --bind 0.0.0.0:$PORT \
+    --bind 0.0.0.0:${PORT:-8080} \
     --access-logfile - \
     --error-logfile - \
     --log-level info \
