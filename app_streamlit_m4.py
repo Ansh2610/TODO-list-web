@@ -299,10 +299,6 @@ if st.session_state.current_results is not None:
     
     st.markdown("---")
     
-    # DEBUG: Check PDF preview status
-    st.write(f"DEBUG: PDF Preview enabled? {ENABLE_PDF_PREVIEW}")
-    st.write(f"DEBUG: PDF bytes available? {st.session_state.uploaded_pdf_bytes is not None}")
-    
     # M4: Two-column layout (PDF Preview + Results)
     if ENABLE_PDF_PREVIEW and st.session_state.uploaded_pdf_bytes:
         pdf_col, results_col = st.columns([1, 1])
@@ -378,10 +374,6 @@ if st.session_state.current_results is not None:
             st.success("🎉 You have all the required skills!")
         
         # Explainable Match Feature (Killer Feature!)
-        # DEBUG: Show what we received
-        st.write(f"DEBUG: Has suggestions? {results.get('suggestions') is not None}")
-        st.write(f"DEBUG: Suggestions data: {results.get('suggestions')}")
-        
         if results.get('suggestions') and len(results['suggestions']) > 0:
             st.markdown("---")
             st.markdown("### 💡 Smart Suggestions - Explainable Match")
