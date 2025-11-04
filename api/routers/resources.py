@@ -11,8 +11,9 @@ from backend.utils import load_json
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Load predefined roles
+# Load predefined roles and learning links
 roles = load_json("data/roles.json")
+learn_links = load_json("data/learn_links.json")
 
 
 @router.get("/roles", response_model=RolesResponse)
@@ -29,44 +30,19 @@ async def get_roles():
     )
 
 
-@router.get("/learn-links/{skill}", response_model=LearnLinksResponse)
-async def get_learning_links(skill: str):
+@router.get("/learn-links", response_model=LearnLinksResponse)
+async def get_learning_links():
     """
-    Get learning resources for a specific skill
-    
-    Args:
-    - skill: Skill name (e.g., "Python", "Docker")
+    Get all curated learning resources (M4 feature)
     
     Returns:
-    - List of curated learning resources with title, URL, and type
-    
-    Note: This is a placeholder for Milestone 4.
-    Will be populated with actual learning resource database.
+    - Dictionary of skill -> {name, url, description} mappings
+    - Includes ~60 common tech skills with official docs/tutorials
     """
-    # TODO: Implement learning resource database in M4
-    logger.info(f"Learning resources requested for: {skill}")
-    
-    # Placeholder response
-    placeholder_links = [
-        {
-            "title": f"Learn {skill} - Official Documentation",
-            "url": f"https://www.google.com/search?q={skill}+official+documentation",
-            "type": "documentation"
-        },
-        {
-            "title": f"{skill} Tutorial on freeCodeCamp",
-            "url": f"https://www.freecodecamp.org/search?query={skill}",
-            "type": "tutorial"
-        },
-        {
-            "title": f"{skill} Course on Coursera",
-            "url": f"https://www.coursera.org/search?query={skill}",
-            "type": "course"
-        }
-    ]
+    logger.info(f"Learning links requested - returning {len(learn_links)} resources")
     
     return LearnLinksResponse(
         success=True,
-        skill=skill,
-        links=placeholder_links
+        links=learn_links
     )
+

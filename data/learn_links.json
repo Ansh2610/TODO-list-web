@@ -1,0 +1,302 @@
+{
+  "Python": {
+    "name": "Python",
+    "url": "https://docs.python.org/3/tutorial/",
+    "description": "Official Python Tutorial"
+  },
+  "Java": {
+    "name": "Java",
+    "url": "https://docs.oracle.com/javase/tutorial/",
+    "description": "Oracle Java Tutorials"
+  },
+  "JavaScript": {
+    "name": "JavaScript",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
+    "description": "MDN JavaScript Guide"
+  },
+  "TypeScript": {
+    "name": "TypeScript",
+    "url": "https://www.typescriptlang.org/docs/handbook/intro.html",
+    "description": "TypeScript Handbook"
+  },
+  "C++": {
+    "name": "C++",
+    "url": "https://cplusplus.com/doc/tutorial/",
+    "description": "C++ Tutorial"
+  },
+  "C": {
+    "name": "C",
+    "url": "https://www.learn-c.org/",
+    "description": "Learn C - Interactive Tutorial"
+  },
+  "Go": {
+    "name": "Go",
+    "url": "https://go.dev/tour/",
+    "description": "A Tour of Go"
+  },
+  "Rust": {
+    "name": "Rust",
+    "url": "https://doc.rust-lang.org/book/",
+    "description": "The Rust Programming Language Book"
+  },
+  "SQL": {
+    "name": "SQL",
+    "url": "https://www.w3schools.com/sql/",
+    "description": "W3Schools SQL Tutorial"
+  },
+  "React": {
+    "name": "React",
+    "url": "https://react.dev/learn",
+    "description": "React Official Documentation"
+  },
+  "Node.js": {
+    "name": "Node.js",
+    "url": "https://nodejs.org/en/docs/guides/getting-started-guide",
+    "description": "Node.js Getting Started"
+  },
+  "Express": {
+    "name": "Express",
+    "url": "https://expressjs.com/en/starter/installing.html",
+    "description": "Express Getting Started"
+  },
+  "Flask": {
+    "name": "Flask",
+    "url": "https://flask.palletsprojects.com/en/stable/quickstart/",
+    "description": "Flask Quickstart"
+  },
+  "Django": {
+    "name": "Django",
+    "url": "https://docs.djangoproject.com/en/stable/intro/tutorial01/",
+    "description": "Django Tutorial"
+  },
+  "FastAPI": {
+    "name": "FastAPI",
+    "url": "https://fastapi.tiangolo.com/tutorial/",
+    "description": "FastAPI Tutorial"
+  },
+  "Spring": {
+    "name": "Spring",
+    "url": "https://spring.io/guides",
+    "description": "Spring Guides"
+  },
+  "Docker": {
+    "name": "Docker",
+    "url": "https://docs.docker.com/get-started/",
+    "description": "Docker Get Started"
+  },
+  "Kubernetes": {
+    "name": "Kubernetes",
+    "url": "https://kubernetes.io/docs/tutorials/kubernetes-basics/",
+    "description": "Kubernetes Basics"
+  },
+  "AWS": {
+    "name": "AWS",
+    "url": "https://aws.amazon.com/getting-started/",
+    "description": "AWS Getting Started"
+  },
+  "Azure": {
+    "name": "Azure",
+    "url": "https://learn.microsoft.com/en-us/azure/",
+    "description": "Microsoft Azure Documentation"
+  },
+  "GCP": {
+    "name": "GCP",
+    "url": "https://cloud.google.com/docs",
+    "description": "Google Cloud Documentation"
+  },
+  "Git": {
+    "name": "Git",
+    "url": "https://git-scm.com/book/en/v2",
+    "description": "Pro Git Book"
+  },
+  "CI/CD": {
+    "name": "CI/CD",
+    "url": "https://docs.github.com/en/actions/quickstart",
+    "description": "GitHub Actions Quickstart"
+  },
+  "Jenkins": {
+    "name": "Jenkins",
+    "url": "https://www.jenkins.io/doc/pipeline/tour/getting-started/",
+    "description": "Jenkins Pipeline Tutorial"
+  },
+  "Terraform": {
+    "name": "Terraform",
+    "url": "https://developer.hashicorp.com/terraform/tutorials",
+    "description": "Terraform Tutorials"
+  },
+  "Ansible": {
+    "name": "Ansible",
+    "url": "https://docs.ansible.com/ansible/latest/getting_started/",
+    "description": "Ansible Getting Started"
+  },
+  "MongoDB": {
+    "name": "MongoDB",
+    "url": "https://www.mongodb.com/docs/manual/tutorial/",
+    "description": "MongoDB Manual"
+  },
+  "PostgreSQL": {
+    "name": "PostgreSQL",
+    "url": "https://www.postgresql.org/docs/current/tutorial.html",
+    "description": "PostgreSQL Tutorial"
+  },
+  "MySQL": {
+    "name": "MySQL",
+    "url": "https://dev.mysql.com/doc/mysql-tutorial-excerpt/8.0/en/",
+    "description": "MySQL Tutorial"
+  },
+  "Redis": {
+    "name": "Redis",
+    "url": "https://redis.io/docs/getting-started/",
+    "description": "Redis Getting Started"
+  },
+  "Kafka": {
+    "name": "Kafka",
+    "url": "https://kafka.apache.org/quickstart",
+    "description": "Apache Kafka Quickstart"
+  },
+  "RabbitMQ": {
+    "name": "RabbitMQ",
+    "url": "https://www.rabbitmq.com/getstarted.html",
+    "description": "RabbitMQ Getting Started"
+  },
+  "GraphQL": {
+    "name": "GraphQL",
+    "url": "https://graphql.org/learn/",
+    "description": "GraphQL Official Tutorial"
+  },
+  "REST": {
+    "name": "REST",
+    "url": "https://restfulapi.net/",
+    "description": "REST API Tutorial"
+  },
+  "Pandas": {
+    "name": "Pandas",
+    "url": "https://pandas.pydata.org/docs/getting_started/intro_tutorials/",
+    "description": "Pandas Getting Started"
+  },
+  "NumPy": {
+    "name": "NumPy",
+    "url": "https://numpy.org/doc/stable/user/absolute_beginners.html",
+    "description": "NumPy for Beginners"
+  },
+  "TensorFlow": {
+    "name": "TensorFlow",
+    "url": "https://www.tensorflow.org/tutorials",
+    "description": "TensorFlow Tutorials"
+  },
+  "PyTorch": {
+    "name": "PyTorch",
+    "url": "https://pytorch.org/tutorials/",
+    "description": "PyTorch Tutorials"
+  },
+  "Scikit-learn": {
+    "name": "Scikit-learn",
+    "url": "https://scikit-learn.org/stable/tutorial/index.html",
+    "description": "Scikit-learn Tutorial"
+  },
+  "Machine Learning": {
+    "name": "Machine Learning",
+    "url": "https://www.coursera.org/learn/machine-learning",
+    "description": "Coursera ML Course (Free Audit)"
+  },
+  "Deep Learning": {
+    "name": "Deep Learning",
+    "url": "https://www.deeplearning.ai/courses/",
+    "description": "DeepLearning.AI Courses"
+  },
+  "NLP": {
+    "name": "NLP",
+    "url": "https://huggingface.co/learn/nlp-course/",
+    "description": "Hugging Face NLP Course"
+  },
+  "Computer Vision": {
+    "name": "Computer Vision",
+    "url": "https://opencv.org/university/",
+    "description": "OpenCV Courses"
+  },
+  "Data Structures": {
+    "name": "Data Structures",
+    "url": "https://www.geeksforgeeks.org/data-structures/",
+    "description": "GeeksforGeeks Data Structures"
+  },
+  "Algorithms": {
+    "name": "Algorithms",
+    "url": "https://www.geeksforgeeks.org/fundamentals-of-algorithms/",
+    "description": "GeeksforGeeks Algorithms"
+  },
+  "System Design": {
+    "name": "System Design",
+    "url": "https://github.com/donnemartin/system-design-primer",
+    "description": "System Design Primer (GitHub)"
+  },
+  "Microservices": {
+    "name": "Microservices",
+    "url": "https://microservices.io/patterns/microservices.html",
+    "description": "Microservices Patterns"
+  },
+  "Agile": {
+    "name": "Agile",
+    "url": "https://www.atlassian.com/agile",
+    "description": "Atlassian Agile Guide"
+  },
+  "Scrum": {
+    "name": "Scrum",
+    "url": "https://www.scrum.org/resources/what-scrum-module",
+    "description": "What is Scrum?"
+  },
+  "Testing": {
+    "name": "Testing",
+    "url": "https://www.guru99.com/software-testing.html",
+    "description": "Software Testing Tutorial"
+  },
+  "Unit Testing": {
+    "name": "Unit Testing",
+    "url": "https://martinfowler.com/bliki/UnitTest.html",
+    "description": "Martin Fowler on Unit Testing"
+  },
+  "TDD": {
+    "name": "TDD",
+    "url": "https://testdriven.io/test-driven-development/",
+    "description": "Test-Driven Development Guide"
+  },
+  "Security": {
+    "name": "Security",
+    "url": "https://owasp.org/www-project-top-ten/",
+    "description": "OWASP Top 10"
+  },
+  "Linux": {
+    "name": "Linux",
+    "url": "https://www.linux.org/pages/download/",
+    "description": "Linux Getting Started"
+  },
+  "Bash": {
+    "name": "Bash",
+    "url": "https://www.gnu.org/software/bash/manual/",
+    "description": "Bash Reference Manual"
+  },
+  "Networking": {
+    "name": "Networking",
+    "url": "https://www.cloudflare.com/learning/",
+    "description": "Cloudflare Learning Center"
+  },
+  "APIs": {
+    "name": "APIs",
+    "url": "https://www.postman.com/api-platform/api-basics/",
+    "description": "Postman API Basics"
+  },
+  "Databases": {
+    "name": "Databases",
+    "url": "https://www.w3schools.com/sql/",
+    "description": "SQL Database Tutorial"
+  },
+  "OOP": {
+    "name": "OOP",
+    "url": "https://www.freecodecamp.org/news/object-oriented-programming-concepts-21bb035f7260/",
+    "description": "OOP Concepts Guide"
+  },
+  "Caching": {
+    "name": "Caching",
+    "url": "https://aws.amazon.com/caching/",
+    "description": "AWS Caching Best Practices"
+  }
+}

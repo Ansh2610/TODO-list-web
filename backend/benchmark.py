@@ -100,5 +100,46 @@ def get_ai_recommendations(
         return validated
         
     except Exception as e:
-        logger.error(f"Failed to generate AI recommendations: {type(e).__name__}")
-        return None
+        # If LLM providers fail (network, missing packages, keys), provide
+        # a deterministic, privacy-preserving fallback so the UI remains
+        # useful for users during offline or dev runs.
+        logger.error(f"Failed to generate AI recommendations: {type(e).__name__} - {str(e)}", exc_info=True)
+
+        try:
+            # Build a simple, deterministic fallback payload using the
+            # extracted and missing skills. Keep text concise but long
+            # enough to satisfy the schema validators.
+            top_missing = ", ".join(missing_skills[:5]) or "None detected"
+            sampled_have = ", ".join(extracted_skills[:8]) or "None"
+
+            fallback = {
+                "coverage_explanation": (
+                    f"This resume matches approximately {coverage_pct}% of the typical {role_name} skills. "
+                    f"The most significant gaps are: {top_missing}."
+                ),
+                "top_missing_skills": (
+                    f"Focus on: {top_missing}. Prioritize the ones that appear most across job listings."
+                ),
+                "learning_path": (
+                    "Month 1: Core concepts and fundamentals; "
+                    "Month 2: Hands-on tutorials and small projects; "
+                    "Month 3: Build a portfolio project that demonstrates missing skills."
+                ),
+                "project_ideas": (
+                    f"Build small projects that use {top_missing} (or if none, deepen {sampled_have}). "
+                    "Examples: a CRUD app, a data pipeline, or a small ML experiment depending on the gap."
+                ),
+                "resume_tweaks": (
+                    "Bring role-relevant keywords to the top of your resume; list projects with concrete outcomes and tools used. "
+                    "Quantify results where possible (e.g., reduced latency by X%, improved throughput by Y%)."
+                )
+            }
+
+            # Validate using the same schema to ensure compatibility
+            validated = validate_ai_payload(fallback)
+            logger.info("Using deterministic fallback AI recommendations")
+            return validated
+
+        except Exception as vex:
+            logger.error(f"Fallback AI generation failed: {type(vex).__name__} - {str(vex)}", exc_info=True)
+            return None

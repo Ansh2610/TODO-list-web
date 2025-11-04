@@ -56,10 +56,10 @@ async def get_ai_insights(request: Request, ai_request: AIRequest):
         
         # Call backend with privacy-first LLM router
         result = get_ai_recommendations(
-            found_skills=ai_request.found_skills,
+            extracted_skills=ai_request.found_skills,
             missing_skills=ai_request.missing_skills,
-            target_role=ai_request.target_role,
-            coverage_percentage=ai_request.coverage_percentage
+            role_name=ai_request.target_role,
+            coverage_pct=ai_request.coverage_percentage
         )
         
         if result is None:
@@ -69,11 +69,7 @@ async def get_ai_insights(request: Request, ai_request: AIRequest):
                 error="AI service temporarily unavailable. All providers failed. Please try again later."
             )
         
-        # Determine which provider was used (check logs or add to backend response)
-        # For now, we'll infer from settings
-        provider_used = settings.LLM_PROVIDERS.split(',')[0].strip()
-        
-        logger.info(f"✓ AI insights generated via {provider_used}")
+        logger.info(f"✓ AI insights generated successfully")
         
         return AIResponse(
             success=True,
@@ -81,8 +77,7 @@ async def get_ai_insights(request: Request, ai_request: AIRequest):
             top_missing_skills=result.top_missing_skills,
             learning_path=result.learning_path,
             project_ideas=result.project_ideas,
-            resume_tweaks=result.resume_tweaks,
-            provider_used=provider_used
+            resume_tweaks=result.resume_tweaks
         )
         
     except HTTPException:

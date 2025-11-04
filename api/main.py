@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 from api.config import settings
-from api.routers import parse, benchmark, ai, resources
+from api.routers import parse, benchmark, ai, resources, export
 from api.models import HealthResponse
 
 # Configure logging
@@ -88,6 +88,7 @@ app.include_router(parse.router, prefix="/api", tags=["Parse"])
 app.include_router(benchmark.router, prefix="/api", tags=["Benchmark"])
 app.include_router(ai.router, prefix="/api", tags=["AI Insights"])
 app.include_router(resources.router, prefix="/api", tags=["Resources"])
+app.include_router(export.router, prefix="/api", tags=["Export"])
 
 
 if __name__ == "__main__":

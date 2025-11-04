@@ -168,22 +168,87 @@ class APIClient:
         """
         return self._make_request("GET", "/api/roles")
     
-    def get_learning_links(self, skill: str) -> Dict[str, Any]:
+    def get_learning_links_all(self) -> Dict[str, Any]:
         """
-        Get learning resources for a skill
+        Get all learning resources (M4 feature)
+        
+        Returns:
+            {
+                "success": bool,
+                "links": Dict[str, Dict],
+                "error": Optional[str]
+            }
+        """
+        return self._make_request("GET", "/api/learn-links")
+    
+    def export_report(
+        self,
+        coverage_percent: float,
+        missing_skills: List[str],
+        skills_by_category: Dict[str, List[str]],
+        target_role_label: str,
+        mode: str = "Role",
+        ai_recommendations: Optional[Dict[str, str]] = None,
+        format: str = "html"
+    ) -> Dict[str, Any]:
+        """
+        Export analysis report (M4 feature)
         
         Args:
-            skill: Skill name
+            coverage_percent: Match percentage
+            missing_skills: Skills gap
+            skills_by_category: Categorized skills
+            target_role_label: Role name or "Custom JD"
+            mode: "Role" or "Custom JD"
+            ai_recommendations: AI insights (optional)
+            format: "html", "json", or "text"
             
         Returns:
             {
                 "success": bool,
-                "skill": str,
-                "links": List[Dict],
+                "format": str,
+                "content": str,
+                "filename": str,
                 "error": Optional[str]
             }
         """
-        return self._make_request("GET", f"/api/learn-links/{skill}")
+        payload = {
+            "coverage_percent": coverage_percent,
+            "missing_skills": missing_skills,
+            "skills_by_category": skills_by_category,
+            "target_role_label": target_role_label,
+            "mode": mode,
+            "ai_recommendations": ai_recommendations,
+            "format": format
+        }
+        return self._make_request("POST", "/api/export", json=payload)
+    
+    def benchmark_with_jd(
+        self,
+        resume_skills: List[str],
+        jd_text: str
+    ) -> Dict[str, Any]:
+        """
+        Benchmark skills against custom JD text (M4 feature)
+        
+        Args:
+            resume_skills: Skills extracted from resume
+            jd_text: Raw job description text
+            
+        Returns:
+            {
+                "success": bool,
+                "coverage_percentage": float,
+                "found_skills": List[str],
+                "missing_skills": List[str],
+                "error": Optional[str]
+            }
+        """
+        payload = {
+            "resume_skills": resume_skills,
+            "jd_text": jd_text
+        }
+        return self._make_request("POST", "/api/benchmark", json=payload)
 
 
 # Singleton instance

@@ -1,7 +1,7 @@
 """
 Pydantic models for API request/response validation
 """
-from typing import List, Optional
+from typing import List, Optional, Dict
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -13,6 +13,7 @@ class ParseResponse(BaseModel):
     """Response from PDF parsing endpoint"""
     success: bool
     skills: List[str] = Field(default_factory=list)
+    skills_by_category: Dict[str, List[str]] = Field(default_factory=dict)
     skill_count: int = 0
     text_preview: str = ""  # First 200 chars for debugging
     error: Optional[str] = None
@@ -27,16 +28,20 @@ class BenchmarkRequest(BaseModel):
     resume_skills: List[str] = Field(..., min_length=1, description="Skills extracted from resume")
     target_role: Optional[str] = Field(None, description="Job role (e.g., 'Software Engineer')")
     target_skills: Optional[List[str]] = Field(None, description="Custom JD skills (alternative to role)")
+    jd_text: Optional[str] = Field(None, description="Raw job description text (M4 feature)")
     
-    @field_validator('target_role', 'target_skills')
+    @field_validator('target_role', 'target_skills', 'jd_text')
     @classmethod
     def validate_target(cls, v, info):
-        """Ensure either target_role OR target_skills is provided"""
-        if info.field_name == 'target_skills':
-            # Check if we have at least one target specified
+        """Ensure either target_role OR target_skills OR jd_text is provided"""
+        if info.field_name == 'jd_text':
             data = info.data
-            if not v and not data.get('target_role'):
-                raise ValueError("Must provide either target_role or target_skills")
+            # If jd_text is provided, it takes precedence
+            if v and len(v.strip()) > 0:
+                return v
+            # Otherwise check if we have target_role or target_skills
+            if not data.get('target_role') and not data.get('target_skills'):
+                raise ValueError("Must provide either target_role, target_skills, or jd_text")
         return v
 
 
@@ -70,7 +75,30 @@ class AIResponse(BaseModel):
     learning_path: str = ""
     project_ideas: str = ""
     resume_tweaks: str = ""
-    provider_used: Optional[str] = None  # GEMINI, OPENAI, or ANTHROPIC
+    error: Optional[str] = None
+
+
+# ============================================================================
+# Export Endpoint Models (M4)
+# ============================================================================
+
+class ExportRequest(BaseModel):
+    """Request for exporting analysis report"""
+    coverage_percent: float = Field(..., ge=0.0, le=100.0)
+    missing_skills: List[str] = Field(default_factory=list)
+    skills_by_category: Dict[str, List[str]] = Field(default_factory=dict)
+    target_role_label: str
+    mode: str = Field("Role", pattern="^(Role|Custom JD)$")
+    ai_recommendations: Optional[Dict[str, str]] = None
+    format: str = Field("html", pattern="^(html|json|text)$")
+
+
+class ExportResponse(BaseModel):
+    """Response from export endpoint"""
+    success: bool
+    format: str
+    content: str  # HTML, JSON, or text content
+    filename: str
     error: Optional[str] = None
 
 
@@ -85,10 +113,9 @@ class RolesResponse(BaseModel):
 
 
 class LearnLinksResponse(BaseModel):
-    """Learning resources for a skill"""
+    """Learning resources for skills"""
     success: bool
-    skill: str
-    links: List[dict] = Field(default_factory=list)  # [{title, url, type}]
+    links: Dict[str, dict] = Field(default_factory=dict)  # {skill: {name, url, description}}
     error: Optional[str] = None
 
 

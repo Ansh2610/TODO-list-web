@@ -11,9 +11,13 @@ import pdfplumber
 from api.config import settings
 from api.models import ParseResponse
 from backend.skills import extract_skills
+from backend.utils import load_json
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+# Load skill bank
+skill_bank = load_json("data/skill_bank.json")
 
 
 async def validate_pdf_upload(file: UploadFile) -> bytes:
@@ -71,11 +75,8 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
             
             full_text = "\n".join(text_parts)
             
-            # Privacy truncation
-            if len(full_text) > settings.MAX_TEXT_LENGTH:
-                logger.info(f"Truncating text from {len(full_text)} to {settings.MAX_TEXT_LENGTH} chars")
-                full_text = full_text[:settings.MAX_TEXT_LENGTH]
-            
+            # Don't truncate here - we need full text for skill extraction
+            # Truncation only happens for the preview field
             return full_text
             
     except Exception as e:
@@ -109,14 +110,19 @@ async def parse_resume(
         text = extract_text_from_pdf(pdf_bytes)
         logger.info(f"✓ Extracted text: {len(text)} chars")
         
-        # Step 3: Extract skills
-        skills = extract_skills(text)
-        logger.info(f"✓ Extracted {len(skills)} skills")
+        # Step 3: Extract skills by category
+        skills_by_category = extract_skills(text, skill_bank)
+        
+        # Flatten skills for compatibility
+        skills_flat = [skill for category_skills in skills_by_category.values() for skill in category_skills]
+        
+        logger.info(f"✓ Extracted {len(skills_flat)} skills across {len(skills_by_category)} categories")
         
         return ParseResponse(
             success=True,
-            skills=skills,
-            skill_count=len(skills),
+            skills=skills_flat,
+            skills_by_category=skills_by_category,
+            skill_count=len(skills_flat),
             text_preview=text[:200] + "..." if len(text) > 200 else text
         )
         

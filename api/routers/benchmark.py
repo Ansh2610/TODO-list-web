@@ -8,12 +8,14 @@ from fastapi import APIRouter, HTTPException
 from api.models import BenchmarkRequest, BenchmarkResponse
 from backend.skills import coverage_against_role
 from backend.utils import load_json
+from backend.jd_parser import parse_jd_skills, validate_jd_text
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Load predefined roles
+# Load predefined roles and skill bank
 roles = load_json("data/roles.json")
+skill_bank = load_json("data/skill_bank.json")
 
 
 @router.post("/benchmark", response_model=BenchmarkResponse)
@@ -24,7 +26,8 @@ async def benchmark_resume(request: BenchmarkRequest):
     Args:
     - resume_skills: List of skills extracted from resume
     - target_role: Predefined role (e.g., "Software Engineer") OR
-    - target_skills: Custom list of skills from a job description
+    - target_skills: Custom list of skills from a job description OR
+    - jd_text: Raw job description text (M4 feature - will be parsed)
     
     Returns:
     - Coverage percentage
@@ -32,8 +35,25 @@ async def benchmark_resume(request: BenchmarkRequest):
     - Missing skills (gap analysis)
     """
     try:
-        # Determine target skill set
-        if request.target_role:
+        # Priority: jd_text > target_skills > target_role
+        if request.jd_text and request.jd_text.strip():
+            # M4 Feature: Parse JD text
+            logger.info(f"Parsing custom JD text ({len(request.jd_text)} chars)")
+            
+            # Validate JD text
+            is_valid, error_msg = validate_jd_text(request.jd_text)
+            if not is_valid:
+                raise HTTPException(status_code=400, detail=error_msg)
+            
+            # Parse skills from JD
+            try:
+                target_skills = parse_jd_skills(request.jd_text, skill_bank)
+                target_name = "Custom JD"
+                logger.info(f"Parsed {len(target_skills)} skills from JD")
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=str(e))
+                
+        elif request.target_role:
             # Use predefined role
             if request.target_role not in roles:
                 available_roles = list(roles.keys())
@@ -44,7 +64,7 @@ async def benchmark_resume(request: BenchmarkRequest):
             target_skills = roles[request.target_role]
             target_name = request.target_role
         else:
-            # Use custom JD skills
+            # Use custom JD skills list
             target_skills = request.target_skills
             target_name = "Custom Job Description"
         
@@ -52,8 +72,8 @@ async def benchmark_resume(request: BenchmarkRequest):
         
         # Calculate coverage using existing function
         coverage, missing = coverage_against_role(
-            resume_skills=request.resume_skills,
-            target_skills=target_skills
+            request.resume_skills,  # extracted_flat
+            target_skills           # role_skills
         )
         
         # Found skills are the intersection
