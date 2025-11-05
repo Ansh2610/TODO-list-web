@@ -10,7 +10,7 @@ font = "sans serif"
 [server]
 headless = true
 enableCORS = false
-port = 8503
+# Streamlit Cloud uses port 8501 by default
 
 [browser]
 gatherUsageStats = false
