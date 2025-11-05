@@ -305,10 +305,29 @@ if st.session_state.current_results is not None:
         
         with pdf_col:
             st.markdown("### 📄 Resume Preview")
-            # Base64 encode PDF for iframe
-            pdf_base64 = base64.b64encode(st.session_state.uploaded_pdf_bytes).decode('utf-8')
-            pdf_display = f'<iframe src="data:application/pdf;base64,{pdf_base64}" class="pdf-preview-container" width="100%" height="600px" type="application/pdf"></iframe>'
-            st.markdown(pdf_display, unsafe_allow_html=True)
+            
+            # Convert PDF to base64
+            base64_pdf = base64.b64encode(st.session_state.uploaded_pdf_bytes).decode('utf-8')
+            
+            # Use PDF.js viewer (more reliable across browsers)
+            pdf_viewer_html = f"""
+            <iframe 
+                src="https://mozilla.github.io/pdf.js/web/viewer.html?file=data:application/pdf;base64,{base64_pdf}" 
+                width="100%" 
+                height="600px" 
+                style="border: 2px solid #E5E7EB; border-radius: 8px;">
+            </iframe>
+            """
+            st.markdown(pdf_viewer_html, unsafe_allow_html=True)
+            
+            # Download button as alternative
+            st.download_button(
+                label="📥 Download PDF",
+                data=st.session_state.uploaded_pdf_bytes,
+                file_name="resume.pdf",
+                mime="application/pdf",
+                use_container_width=True
+            )
             
         results_container = results_col
     else:
