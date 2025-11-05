@@ -3,6 +3,7 @@ SkillLens - Resume Analyzer v0.4.0
 Milestone 4: Custom JD, PDF Preview, Learn Links, Export
 """
 import os
+import io
 import logging
 import streamlit as st
 import tempfile
@@ -10,6 +11,7 @@ import base64
 from pathlib import Path
 import httpx
 import json
+import pdfplumber
 
 from api.client import get_api_client
 from backend.flags import (
@@ -306,45 +308,34 @@ if st.session_state.current_results is not None:
         with pdf_col:
             st.markdown("### 📄 Resume Preview")
             
-            # INDUSTRY STANDARD SOLUTION: Use PDF.js via Streamlit components
-            # This is what production apps use (Google Drive, Dropbox, etc.)
-            import streamlit.components.v1 as components
+            # PROPER SOLUTION: Render PDF as images using pdfplumber
+            # Works on ALL platforms (localhost + Streamlit Cloud) because we show images, not embed PDFs
+            try:
+                pdf_file = io.BytesIO(st.session_state.uploaded_pdf_bytes)
+                
+                with pdfplumber.open(pdf_file) as pdf:
+                    # Show first page as preview (most important for resume)
+                    if len(pdf.pages) > 0:
+                        first_page = pdf.pages[0]
+                        
+                        # Convert PDF page to image
+                        img = first_page.to_image(resolution=150)
+                        
+                        # Display the image (works on all platforms!)
+                        st.image(img.original, use_container_width=True)
+                        
+                        # If multi-page, show other pages
+                        if len(pdf.pages) > 1:
+                            with st.expander(f"📄 View all {len(pdf.pages)} pages"):
+                                for i, page in enumerate(pdf.pages[1:], start=2):
+                                    st.markdown(f"**Page {i}**")
+                                    page_img = page.to_image(resolution=150)
+                                    st.image(page_img.original, use_container_width=True)
             
-            base64_pdf = base64.b64encode(st.session_state.uploaded_pdf_bytes).decode('utf-8')
+            except Exception as e:
+                st.warning(f"⚠️ Could not render PDF preview: {str(e)}")
             
-            # Embed PDF using Mozilla's PDF.js (the gold standard)
-            pdf_viewer_html = f"""
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body {{
-                        margin: 0;
-                        padding: 0;
-                        overflow: hidden;
-                    }}
-                    #pdf-container {{
-                        width: 100%;
-                        height: 800px;
-                    }}
-                </style>
-            </head>
-            <body>
-                <embed
-                    id="pdf-container"
-                    src="data:application/pdf;base64,{base64_pdf}"
-                    type="application/pdf"
-                    width="100%"
-                    height="800px"
-                />
-            </body>
-            </html>
-            """
-            
-            # Use Streamlit's components to render HTML with proper isolation
-            components.html(pdf_viewer_html, height=820, scrolling=False)
-            
-            # Download button as backup
+            # Download button
             st.download_button(
                 label="📥 Download Resume",
                 data=st.session_state.uploaded_pdf_bytes,
