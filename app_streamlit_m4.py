@@ -305,20 +305,33 @@ if st.session_state.current_results is not None:
         
         with pdf_col:
             st.markdown("### 📄 Resume Preview")
-            st.info("💡 **Tip:** Download your PDF below to view it while reviewing the analysis")
             
-            # Download button
+            # Method 1: Try embedding directly (works in most browsers)
+            base64_pdf = base64.b64encode(st.session_state.uploaded_pdf_bytes).decode('utf-8')
+            
+            pdf_display = f'''
+                <object data="data:application/pdf;base64,{base64_pdf}" 
+                        type="application/pdf" 
+                        width="100%" 
+                        height="800px"
+                        style="border: 2px solid #E5E7EB; border-radius: 8px;">
+                    <p>Your browser doesn't support PDF preview. 
+                       <a href="data:application/pdf;base64,{base64_pdf}" download="resume.pdf">
+                       Click here to download instead</a>
+                    </p>
+                </object>
+            '''
+            
+            st.markdown(pdf_display, unsafe_allow_html=True)
+            
+            # Download button as backup
             st.download_button(
-                label="📥 Download Your Resume",
+                label="📥 Download Resume",
                 data=st.session_state.uploaded_pdf_bytes,
                 file_name="resume.pdf",
                 mime="application/pdf",
                 use_container_width=True
             )
-            
-            # Show file info
-            file_size_mb = len(st.session_state.uploaded_pdf_bytes) / (1024 * 1024)
-            st.caption(f"📊 File size: {file_size_mb:.2f} MB")
             
         results_container = results_col
     else:
