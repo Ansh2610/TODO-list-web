@@ -306,25 +306,42 @@ if st.session_state.current_results is not None:
         with pdf_col:
             st.markdown("### 📄 Resume Preview")
             
-            # Method 1: Try embedding directly (works in most browsers)
-            base64_pdf = base64.b64encode(st.session_state.uploaded_pdf_bytes).decode('utf-8')
+            # REAL SOLUTION: Convert PDF to images using pdfplumber
+            # This works EVERYWHERE (localhost, Streamlit Cloud, all browsers)
+            try:
+                import io
+                import pdfplumber
+                from PIL import Image
+                
+                pdf_file = io.BytesIO(st.session_state.uploaded_pdf_bytes)
+                
+                with pdfplumber.open(pdf_file) as pdf:
+                    # Show page navigation if multiple pages
+                    num_pages = len(pdf.pages)
+                    
+                    if num_pages > 1:
+                        page_num = st.selectbox(
+                            "📄 Page",
+                            range(1, num_pages + 1),
+                            format_func=lambda x: f"Page {x} of {num_pages}"
+                        )
+                    else:
+                        page_num = 1
+                    
+                    # Get the selected page
+                    page = pdf.pages[page_num - 1]
+                    
+                    # Convert page to image
+                    img = page.to_image(resolution=150)
+                    
+                    # Display the image
+                    st.image(img.original, use_container_width=True)
+                    
+            except Exception as e:
+                st.error(f"⚠️ Could not render PDF preview: {str(e)}")
+                st.info("You can still download your PDF below to view it")
             
-            pdf_display = f'''
-                <object data="data:application/pdf;base64,{base64_pdf}" 
-                        type="application/pdf" 
-                        width="100%" 
-                        height="800px"
-                        style="border: 2px solid #E5E7EB; border-radius: 8px;">
-                    <p>Your browser doesn't support PDF preview. 
-                       <a href="data:application/pdf;base64,{base64_pdf}" download="resume.pdf">
-                       Click here to download instead</a>
-                    </p>
-                </object>
-            '''
-            
-            st.markdown(pdf_display, unsafe_allow_html=True)
-            
-            # Download button as backup
+            # Download button
             st.download_button(
                 label="📥 Download Resume",
                 data=st.session_state.uploaded_pdf_bytes,
