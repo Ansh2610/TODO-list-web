@@ -44,7 +44,8 @@ env/
 Thumbs.db
 
 # Streamlit
-.streamlit/
+.streamlit/secrets.toml
+# Keep config.toml for theme settings
 
 # Resume files (privacy)
 *.pdf
