@@ -11,8 +11,6 @@ import io
 from pathlib import Path
 import httpx
 import json
-import fitz  # PyMuPDF
-from PIL import Image
 
 from api.client import get_api_client
 from backend.flags import (
