@@ -3,15 +3,16 @@ SkillLens - Resume Analyzer v0.4.0
 Milestone 4: Custom JD, PDF Preview, Learn Links, Export
 """
 import os
-import io
 import logging
 import streamlit as st
 import tempfile
 import base64
+import io
 from pathlib import Path
 import httpx
 import json
-import pdfplumber
+import fitz  # PyMuPDF
+from PIL import Image
 
 from api.client import get_api_client
 from backend.flags import (
@@ -308,34 +309,25 @@ if st.session_state.current_results is not None:
         with pdf_col:
             st.markdown("### 📄 Resume Preview")
             
-            # PROPER SOLUTION: Render PDF as images using pdfplumber
-            # Works on ALL platforms (localhost + Streamlit Cloud) because we show images, not embed PDFs
-            try:
-                pdf_file = io.BytesIO(st.session_state.uploaded_pdf_bytes)
-                
-                with pdfplumber.open(pdf_file) as pdf:
-                    # Show first page as preview (most important for resume)
-                    if len(pdf.pages) > 0:
-                        first_page = pdf.pages[0]
-                        
-                        # Convert PDF page to image
-                        img = first_page.to_image(resolution=150)
-                        
-                        # Display the image (works on all platforms!)
-                        st.image(img.original, use_container_width=True)
-                        
-                        # If multi-page, show other pages
-                        if len(pdf.pages) > 1:
-                            with st.expander(f"📄 View all {len(pdf.pages)} pages"):
-                                for i, page in enumerate(pdf.pages[1:], start=2):
-                                    st.markdown(f"**Page {i}**")
-                                    page_img = page.to_image(resolution=150)
-                                    st.image(page_img.original, use_container_width=True)
+            # Convert PDF to base64 for embedding
+            base64_pdf = base64.b64encode(st.session_state.uploaded_pdf_bytes).decode('utf-8')
             
-            except Exception as e:
-                st.warning(f"⚠️ Could not render PDF preview: {str(e)}")
+            # Create iframe with PDF - more reliable than embed in Streamlit
+            pdf_display = f'''
+                <iframe 
+                    src="data:application/pdf;base64,{base64_pdf}" 
+                    width="100%" 
+                    height="700px" 
+                    type="application/pdf"
+                    style="border: 2px solid #E5E7EB; border-radius: 8px;">
+                    <p>Your browser does not support PDFs. 
+                    <a href="data:application/pdf;base64,{base64_pdf}">Download the PDF</a>.</p>
+                </iframe>
+            '''
             
-            # Download button
+            st.markdown(pdf_display, unsafe_allow_html=True)
+            
+            # Download button as backup
             st.download_button(
                 label="📥 Download Resume",
                 data=st.session_state.uploaded_pdf_bytes,
@@ -343,6 +335,10 @@ if st.session_state.current_results is not None:
                 mime="application/pdf",
                 use_container_width=True
             )
+            
+            # Show file info
+            file_size_mb = len(st.session_state.uploaded_pdf_bytes) / (1024 * 1024)
+            st.caption(f"📊 File size: {file_size_mb:.2f} MB")
             
         results_container = results_col
     else:
