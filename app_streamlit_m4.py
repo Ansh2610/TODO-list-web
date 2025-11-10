@@ -11,6 +11,8 @@ import io
 from pathlib import Path
 import httpx
 import json
+import fitz  # PyMuPDF
+from PIL import Image
 
 from api.client import get_api_client
 from backend.flags import (
@@ -310,20 +312,177 @@ if st.session_state.current_results is not None:
             # Convert PDF to base64 for embedding
             base64_pdf = base64.b64encode(st.session_state.uploaded_pdf_bytes).decode('utf-8')
             
-            # Create iframe with PDF - more reliable than embed in Streamlit
-            pdf_display = f'''
-                <iframe 
-                    src="data:application/pdf;base64,{base64_pdf}" 
-                    width="100%" 
-                    height="700px" 
-                    type="application/pdf"
-                    style="border: 2px solid #E5E7EB; border-radius: 8px;">
-                    <p>Your browser does not support PDFs. 
-                    <a href="data:application/pdf;base64,{base64_pdf}">Download the PDF</a>.</p>
-                </iframe>
-            '''
+            # Use PDF.js with text layer for proper text selection and scrolling
+            pdf_viewer_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    * {{
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                    }}
+                    body {{
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                        background: #f5f5f5;
+                        overflow: hidden;
+                    }}
+                    #pdf-viewer {{
+                        width: 100%;
+                        height: 100vh;
+                        overflow-y: auto;
+                        overflow-x: hidden;
+                        background: #525659;
+                        padding: 20px 10px;
+                    }}
+                    .pdf-page {{
+                        position: relative;
+                        margin: 0 auto 20px;
+                        background: white;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                        max-width: 100%;
+                    }}
+                    .pdf-page canvas {{
+                        display: block;
+                        width: 100%;
+                        height: auto;
+                    }}
+                    .textLayer {{
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        right: 0;
+                        bottom: 0;
+                        overflow: hidden;
+                        opacity: 0.2;
+                        line-height: 1.0;
+                    }}
+                    .textLayer > span {{
+                        color: transparent;
+                        position: absolute;
+                        white-space: pre;
+                        cursor: text;
+                        transform-origin: 0% 0%;
+                    }}
+                    .textLayer ::selection {{
+                        background: rgba(0, 100, 255, 0.4);
+                    }}
+                    .textLayer ::-moz-selection {{
+                        background: rgba(0, 100, 255, 0.4);
+                    }}
+                    #loading {{
+                        text-align: center;
+                        padding: 40px;
+                        color: white;
+                        font-size: 16px;
+                    }}
+                    .page-number {{
+                        text-align: center;
+                        color: #666;
+                        padding: 8px;
+                        font-size: 12px;
+                        background: #f9f9f9;
+                        margin: 0 auto 10px;
+                        width: fit-content;
+                        border-radius: 4px;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div id="pdf-viewer">
+                    <div id="loading">Loading PDF...</div>
+                </div>
+                
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+                <script>
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                    
+                    // Convert base64 to Uint8Array
+                    const pdfData = atob('{base64_pdf}');
+                    const uint8Array = new Uint8Array(pdfData.length);
+                    for (let i = 0; i < pdfData.length; i++) {{
+                        uint8Array[i] = pdfData.charCodeAt(i);
+                    }}
+                    
+                    const loadingTask = pdfjsLib.getDocument({{data: uint8Array}});
+                    const viewer = document.getElementById('pdf-viewer');
+                    
+                    loadingTask.promise.then(async function(pdf) {{
+                        viewer.innerHTML = '';
+                        console.log('PDF loaded. Pages:', pdf.numPages);
+                        
+                        // Render all pages
+                        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {{
+                            const page = await pdf.getPage(pageNum);
+                            
+                            // Create page container
+                            const pageDiv = document.createElement('div');
+                            pageDiv.className = 'pdf-page';
+                            
+                            // Add page number if multiple pages
+                            if (pdf.numPages > 1) {{
+                                const pageLabel = document.createElement('div');
+                                pageLabel.className = 'page-number';
+                                pageLabel.textContent = `Page ${{pageNum}} of ${{pdf.numPages}}`;
+                                viewer.appendChild(pageLabel);
+                            }}
+                            
+                            // Create canvas for rendering
+                            const canvas = document.createElement('canvas');
+                            const context = canvas.getContext('2d');
+                            
+                            // Calculate scale for good quality
+                            const viewport = page.getViewport({{ scale: 1.5 }});
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+                            
+                            pageDiv.appendChild(canvas);
+                            
+                            // Create text layer for text selection
+                            const textLayerDiv = document.createElement('div');
+                            textLayerDiv.className = 'textLayer';
+                            textLayerDiv.style.width = viewport.width + 'px';
+                            textLayerDiv.style.height = viewport.height + 'px';
+                            pageDiv.appendChild(textLayerDiv);
+                            
+                            viewer.appendChild(pageDiv);
+                            
+                            // Render page canvas
+                            await page.render({{
+                                canvasContext: context,
+                                viewport: viewport
+                            }}).promise;
+                            
+                            // Render text layer for selection
+                            const textContent = await page.getTextContent();
+                            
+                            textContent.items.forEach(function(textItem) {{
+                                const tx = pdfjsLib.Util.transform(
+                                    viewport.transform,
+                                    textItem.transform
+                                );
+                                
+                                const span = document.createElement('span');
+                                span.textContent = textItem.str;
+                                span.style.left = tx[4] + 'px';
+                                span.style.top = (tx[5]) + 'px';
+                                span.style.fontSize = (textItem.height) + 'px';
+                                span.style.transform = `scaleX(${{textItem.width / (span.textContent.length * textItem.height * 0.5)}})`;
+                                
+                                textLayerDiv.appendChild(span);
+                            }});
+                        }}
+                    }}).catch(function(error) {{
+                        viewer.innerHTML = '<div id="loading">Error loading PDF: ' + error.message + '</div>';
+                        console.error('Error:', error);
+                    }});
+                </script>
+            </body>
+            </html>
+            """
             
-            st.markdown(pdf_display, unsafe_allow_html=True)
+            st.components.v1.html(pdf_viewer_html, height=760, scrolling=True)
             
             # Download button as backup
             st.download_button(
