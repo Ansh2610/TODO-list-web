@@ -46,51 +46,79 @@ def build_prompt(
 Provide detailed, actionable career guidance in JSON format with SPECIFIC learning resources:
 
 {{
-  "coverage_explanation": "Detailed explanation of why this coverage % happened. Analyze the skill gaps in context of the {role_name} role requirements. Explain which skill categories are strong vs weak. 4-5 sentences with specific examples.",
+  "coverage_explanation": "Write 4-6 detailed sentences explaining why this coverage % happened. Analyze the skill gaps in context of the {role_name} role requirements. Explain which skill categories (e.g., backend, frontend, DevOps, databases) are strong vs weak with specific examples. Mention 2-3 specific missing skills and why they matter. Include industry context about what employers expect.",
   
-  "top_missing_skills": "Prioritize the top 5 most critical missing skills for this {role_name} role. For EACH skill, explain:
-- Why it's important for this role (1 sentence)
-- Recommended learning resources with FULL URLs:
-  * Online courses (Coursera, Udemy, Pluralsight, edX with specific course names and URLs)
-  * Official documentation (with exact URLs)
-  * YouTube tutorials (specific channel/playlist names and URLs)
-  * Books (title and author)
-- Estimated time to learn (e.g., '2-3 weeks with 5 hours/week')
-Format as: 'Skill Name: [importance] | Learn: [Course Name](URL), [Doc Name](URL) | Time: X weeks'",
+  "top_missing_skills": "List the top 5 most critical missing skills for this {role_name} role. For EACH skill, you MUST include:
+1. Skill name in **bold**
+2. Why it's important (2-3 sentences with specific job market data or role requirements)
+3. At least 3 learning resources in markdown link format [Course Name](https://full-url.com) 🔗
+   - Include Udemy/Coursera courses with REAL course names
+   - Include official documentation with REAL URLs
+   - Include YouTube tutorials with REAL channel/video URLs
+4. Realistic time estimate with hours/week (e.g., '3 weeks with 10 hours/week')
 
-  "learning_path": "Detailed 3-6 month learning roadmap broken down by:
-- Month 1-2: [Skills to focus on] with specific course links
-- Month 3-4: [Next skills] with specific course links  
-- Month 5-6: [Advanced skills] with specific course links
-Include 2-3 specific learning resources (with URLs) for each phase. Recommend certifications if relevant (e.g., 'AWS Certified Developer: https://aws.amazon.com/certification/'). Suggest weekly time commitment (e.g., '10-15 hours/week').",
+Write 4-5 sentences per skill. Include URLs in every entry.",
 
-  "project_ideas": "Provide 3-4 specific portfolio project ideas that demonstrate the missing skills:
-- Project 1: [Name] - [Description] | Tech stack: [specific technologies] | Complexity: [Beginner/Intermediate/Advanced] | GitHub templates or similar projects: [URLs if available] | Key learning outcomes: [skills demonstrated]
-- Project 2: [similar format]
-Include links to GitHub repositories with similar implementations, tutorial series, or project starter templates where possible.",
+  "learning_path": "Create a detailed 6-month learning roadmap (6-8 sentences total). Break it down into 3 phases:
 
-  "resume_tweaks": "Tactical advice on improving resume presentation:
-- How to better highlight existing skills (specific formatting tips, keywords to add)
-- Which projects/experience to emphasize for {role_name} roles
-- Recommended resume sections (e.g., 'Add Technical Skills section', 'Create Projects portfolio')
-- ATS optimization tips (keywords to include based on missing skills)
-- Specific action items (e.g., 'Add GitHub link prominently', 'Quantify achievements with metrics')
-5-6 specific, actionable recommendations."
+**Months 1-2**: [List 2-3 foundational skills to learn first]. Recommend 2-3 specific courses with FULL URLs in markdown format [Course](https://url.com) 🔗. Include estimated hours/week.
+
+**Months 3-4**: [List 2-3 intermediate skills building on foundations]. Recommend 2-3 specific courses with FULL URLs. Suggest certifications like '[AWS Certified Developer](https://aws.amazon.com/certification/certified-developer-associate/) 🔗' if relevant.
+
+**Months 5-6**: [List 2-3 advanced skills or specializations]. Recommend 2-3 advanced courses/resources with FULL URLs. Include capstone project suggestions.
+
+Include weekly time commitment estimate (e.g., '12-15 hours/week'). MUST include at least 6-8 real course URLs total.",
+
+  "project_ideas": "Provide 3-4 detailed portfolio project ideas (4-5 sentences each). For EACH project include:
+- **Project Name**: Descriptive title
+- **Description**: What it does and why it's valuable (2-3 sentences)
+- **Tech Stack**: List 4-6 specific technologies (e.g., 'React, Node.js, PostgreSQL, Docker, AWS')
+- **Complexity**: Beginner/Intermediate/Advanced
+- **Key Learning Outcomes**: List 3-4 specific skills demonstrated
+- **Resources**: Include 2-3 markdown links to GitHub templates, tutorials, or similar projects [Example](https://github.com/url) 🔗
+- **Timeline**: Estimated hours to complete (e.g., '20-30 hours over 3 weeks')
+
+Write detailed descriptions, not brief summaries.",
+
+  "resume_tweaks": "Provide 6-8 specific, actionable resume optimization tips (6-8 sentences total):
+- How to reword experience bullets to highlight technical skills (give 1-2 specific examples)
+- Which keywords to add for ATS optimization (list 5-6 specific keywords for {role_name})
+- Resume section recommendations (e.g., 'Add a Technical Skills section at top', 'Create a Projects portfolio section')
+- How to quantify achievements (give 2 specific examples with numbers/metrics)
+- Formatting tips for readability (specific font, spacing, section order advice)
+- How to highlight relevant projects/experience for {role_name} roles (specific guidance)
+
+Be specific with examples, not generic advice like 'improve your resume'."
 }}
 
-CRITICAL REQUIREMENTS:
-1. Include REAL, CLICKABLE URLs for all learning resources (courses, docs, certifications)
-2. Be SPECIFIC - name actual courses, not "take a course in X"
-3. Provide MEASURABLE timelines (weeks, hours/week)
-4. Include CONCRETE project examples with tech stacks
-5. Make every recommendation ACTIONABLE with clear next steps
+CRITICAL REQUIREMENTS - YOU MUST FOLLOW THESE:
+1. EVERY skill MUST have at least 2-3 REAL, WORKING URLs in markdown format [Text](URL)
+2. Use ACTUAL course names: "Complete Python Bootcamp" not "a Python course"
+3. Include REAL website URLs: https://www.coursera.org/learn/python, https://docs.python.org/
+4. Add SPECIFIC time estimates: "3 weeks with 10 hours/week" not "a few weeks"
+5. For projects, include FULL descriptions (3-4 sentences) with tech stacks
+6. Every section MUST be 4-6 sentences minimum, not 1-2 sentences
 
-Example URL formats:
-- Coursera: https://www.coursera.org/learn/[course-name]
-- Udemy: https://www.udemy.com/course/[course-name]
-- Official docs: https://docs.[technology].com/
-- YouTube: https://www.youtube.com/playlist?list=[id]
-- GitHub: https://github.com/[user]/[repo]"""
+EXAMPLE FORMAT (YOU MUST FOLLOW THIS STRUCTURE):
+
+For top_missing_skills:
+"**Docker**: Critical for containerization and deployment in DevOps roles. Docker skills are required for 85% of backend positions.
+Learn: [Docker Mastery: with Kubernetes +Swarm from a Docker Captain](https://www.udemy.com/course/docker-mastery/) 🔗, [Official Docker Documentation](https://docs.docker.com/) 🔗, [FreeCodeCamp Docker Tutorial](https://www.youtube.com/watch?v=fqMOX6JJhGo) 🔗
+Time: 2-3 weeks with 8-10 hours/week"
+
+For learning_path:
+"**Months 1-2**: Focus on foundational backend skills - learn Go programming and RESTful API design. Take [Go: The Complete Developer's Guide](https://www.udemy.com/course/go-the-complete-developers-guide/) 🔗 and build 2-3 small APIs. Study [Official Go Documentation](https://go.dev/doc/) 🔗. Get certified with [Go Programming Language Specialization](https://www.coursera.org/specializations/google-golang) 🔗. Time commitment: 12-15 hours/week."
+
+For project_ideas:
+"**Project 1: Task Management REST API**
+Build a full-featured task management system with user authentication, CRUD operations, and database integration. 
+**Tech Stack**: Go (Gin framework), PostgreSQL, Docker, JWT authentication, Redis for caching
+**Complexity**: Intermediate
+**Learning Outcomes**: RESTful API design, database modeling, authentication, containerization
+**Resources**: [Gin Web Framework Guide](https://github.com/gin-gonic/gin) 🔗, [PostgreSQL Tutorial](https://www.postgresqltutorial.com/) 🔗, [Similar Project Example](https://github.com/gothinkster/golang-gin-realworld-example-app) 🔗
+**Timeline**: 3-4 weeks, 15-20 hours total"
+
+YOU MUST INCLUDE REAL URLS IN EVERY SECTION. NO GENERIC ADVICE."""
     
     return prompt
 
