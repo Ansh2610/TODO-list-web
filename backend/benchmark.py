@@ -43,17 +43,54 @@ def build_prompt(
 
 **Coverage**: {coverage_pct}%
 
-Provide actionable career guidance in JSON format:
+Provide detailed, actionable career guidance in JSON format with SPECIFIC learning resources:
 
 {{
-  "coverage_explanation": "Why this coverage % happened (focus on skill gaps, not resume formatting). 2-3 sentences.",
-  "top_missing_skills": "Prioritize 3-5 high-impact missing skills for this role. 1-2 sentences.",
-  "learning_path": "Concrete 3-month learning roadmap with resources. 3-4 sentences.",
-  "project_ideas": "2-3 portfolio project suggestions to demonstrate missing skills. 2-3 sentences.",
-  "resume_tweaks": "Tactical advice on highlighting existing skills better. 2-3 sentences."
+  "coverage_explanation": "Detailed explanation of why this coverage % happened. Analyze the skill gaps in context of the {role_name} role requirements. Explain which skill categories are strong vs weak. 4-5 sentences with specific examples.",
+  
+  "top_missing_skills": "Prioritize the top 5 most critical missing skills for this {role_name} role. For EACH skill, explain:
+- Why it's important for this role (1 sentence)
+- Recommended learning resources with FULL URLs:
+  * Online courses (Coursera, Udemy, Pluralsight, edX with specific course names and URLs)
+  * Official documentation (with exact URLs)
+  * YouTube tutorials (specific channel/playlist names and URLs)
+  * Books (title and author)
+- Estimated time to learn (e.g., '2-3 weeks with 5 hours/week')
+Format as: 'Skill Name: [importance] | Learn: [Course Name](URL), [Doc Name](URL) | Time: X weeks'",
+
+  "learning_path": "Detailed 3-6 month learning roadmap broken down by:
+- Month 1-2: [Skills to focus on] with specific course links
+- Month 3-4: [Next skills] with specific course links  
+- Month 5-6: [Advanced skills] with specific course links
+Include 2-3 specific learning resources (with URLs) for each phase. Recommend certifications if relevant (e.g., 'AWS Certified Developer: https://aws.amazon.com/certification/'). Suggest weekly time commitment (e.g., '10-15 hours/week').",
+
+  "project_ideas": "Provide 3-4 specific portfolio project ideas that demonstrate the missing skills:
+- Project 1: [Name] - [Description] | Tech stack: [specific technologies] | Complexity: [Beginner/Intermediate/Advanced] | GitHub templates or similar projects: [URLs if available] | Key learning outcomes: [skills demonstrated]
+- Project 2: [similar format]
+Include links to GitHub repositories with similar implementations, tutorial series, or project starter templates where possible.",
+
+  "resume_tweaks": "Tactical advice on improving resume presentation:
+- How to better highlight existing skills (specific formatting tips, keywords to add)
+- Which projects/experience to emphasize for {role_name} roles
+- Recommended resume sections (e.g., 'Add Technical Skills section', 'Create Projects portfolio')
+- ATS optimization tips (keywords to include based on missing skills)
+- Specific action items (e.g., 'Add GitHub link prominently', 'Quantify achievements with metrics')
+5-6 specific, actionable recommendations."
 }}
 
-Keep responses brief, specific, and actionable. Avoid generic advice."""
+CRITICAL REQUIREMENTS:
+1. Include REAL, CLICKABLE URLs for all learning resources (courses, docs, certifications)
+2. Be SPECIFIC - name actual courses, not "take a course in X"
+3. Provide MEASURABLE timelines (weeks, hours/week)
+4. Include CONCRETE project examples with tech stacks
+5. Make every recommendation ACTIONABLE with clear next steps
+
+Example URL formats:
+- Coursera: https://www.coursera.org/learn/[course-name]
+- Udemy: https://www.udemy.com/course/[course-name]
+- Official docs: https://docs.[technology].com/
+- YouTube: https://www.youtube.com/playlist?list=[id]
+- GitHub: https://github.com/[user]/[repo]"""
     
     return prompt
 
