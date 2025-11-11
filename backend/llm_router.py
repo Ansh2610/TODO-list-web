@@ -29,9 +29,9 @@ class LLMRouter:
         order = os.getenv("LLM_PROVIDERS", f"{OPENAI},{ANTHROPIC},{GEMINI}")
         self.providers = [p.strip().upper() for p in order.split(",") if p.strip()]
         
-        # Safety limits
-        self.timeout = int(os.getenv("LLM_TIMEOUT_SECONDS", "20"))
-        self.max_tokens = int(os.getenv("LLM_MAX_TOKENS", "800"))
+        # Safety limits - increased for detailed responses with URLs
+        self.timeout = int(os.getenv("LLM_TIMEOUT_SECONDS", "30"))
+        self.max_tokens = int(os.getenv("LLM_MAX_TOKENS", "3000"))
         
         # Check which keys are available
         self.keys = {

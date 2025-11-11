@@ -17,37 +17,37 @@ class AIRecommendations(BaseModel):
     
     coverage_explanation: str = Field(
         ..., 
-        min_length=10,
-        max_length=500,
-        description="2-3 sentences explaining why this coverage % happened (focus on skill gaps)"
+        min_length=50,
+        max_length=2000,
+        description="4-6 detailed sentences explaining coverage with specific skill gap analysis"
     )
     
     top_missing_skills: str = Field(
         ...,
-        min_length=10,
-        max_length=300,
-        description="1-2 sentences prioritizing 3-5 high-impact missing skills"
+        min_length=100,
+        max_length=3000,
+        description="Detailed analysis of 5 top skills with learning resources and URLs (4-5 sentences per skill)"
     )
     
     learning_path: str = Field(
         ...,
-        min_length=10,
-        max_length=600,
-        description="3-4 sentences with concrete 3-month learning roadmap and resources"
+        min_length=100,
+        max_length=3000,
+        description="6-8 sentences with detailed 6-month roadmap broken into phases with course URLs"
     )
     
     project_ideas: str = Field(
         ...,
-        min_length=10,
-        max_length=500,
-        description="2-3 sentences with 2-3 portfolio project suggestions"
+        min_length=100,
+        max_length=2500,
+        description="3-4 detailed project ideas with tech stacks, complexity, and GitHub links (4-5 sentences each)"
     )
     
     resume_tweaks: str = Field(
         ...,
-        min_length=10,
-        max_length=400,
-        description="2-3 sentences with tactical advice on highlighting existing skills"
+        min_length=50,
+        max_length=2000,
+        description="6-8 specific, actionable resume optimization tips with examples"
     )
 
 
