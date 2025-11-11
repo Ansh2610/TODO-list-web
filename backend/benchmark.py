@@ -118,7 +118,9 @@ Build a full-featured task management system with user authentication, CRUD oper
 **Resources**: [Gin Web Framework Guide](https://github.com/gin-gonic/gin) 🔗, [PostgreSQL Tutorial](https://www.postgresqltutorial.com/) 🔗, [Similar Project Example](https://github.com/gothinkster/golang-gin-realworld-example-app) 🔗
 **Timeline**: 3-4 weeks, 15-20 hours total"
 
-YOU MUST INCLUDE REAL URLS IN EVERY SECTION. NO GENERIC ADVICE."""
+YOU MUST INCLUDE REAL URLS IN EVERY SECTION. NO GENERIC ADVICE.
+
+IMPORTANT: Your response will NOT be truncated. You have 4096 tokens available. Write FULL, DETAILED, COMPREHENSIVE responses for each section. DO NOT abbreviate or summarize. Provide COMPLETE information with ALL URLs requested."""
     
     return prompt
 

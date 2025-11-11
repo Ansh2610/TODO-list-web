@@ -31,7 +31,7 @@ class LLMRouter:
         
         # Safety limits - increased for detailed responses with URLs
         self.timeout = int(os.getenv("LLM_TIMEOUT_SECONDS", "30"))
-        self.max_tokens = int(os.getenv("LLM_MAX_TOKENS", "3000"))
+        self.max_tokens = int(os.getenv("LLM_MAX_TOKENS", "4096"))  # Increased to 4096 for very detailed responses
         
         # Check which keys are available
         self.keys = {
@@ -105,13 +105,15 @@ class LLMRouter:
             import google.generativeai as genai
             
             genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-            model = genai.GenerativeModel("gemini-2.0-flash")  # Updated model name
+            model = genai.GenerativeModel("gemini-2.0-flash-exp")  # Use experimental model for better output
             
             response = model.generate_content(
-                f"Respond ONLY with compact JSON.\n\n{prompt}",  # Include instruction in prompt
+                f"You MUST provide DETAILED, LONG responses with REAL URLs. Respond ONLY with JSON.\n\n{prompt}",
                 generation_config={
-                    "temperature": 0.2,
-                    "max_output_tokens": self.max_tokens
+                    "temperature": 0.3,  # Slightly higher for more creative URLs
+                    "max_output_tokens": 4096,  # Maximum tokens for detailed responses
+                    "top_p": 0.95,
+                    "top_k": 40
                 }
             )
             
